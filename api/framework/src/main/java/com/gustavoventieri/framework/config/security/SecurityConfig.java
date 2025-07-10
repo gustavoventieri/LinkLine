@@ -26,9 +26,9 @@ public class SecurityConfig {
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     private static final String[] PUBLIC_MATCHERS = {
-        "/api/auth/**",
-        "/api/email-confirmation/**",
-        "/api/reset-password/**",
+        "/api/v1/auth/**",
+        "/api/v1/email-confirmation/**",
+        "/api/v1/reset-password/**",
         "/docs/index.html",
         "/docs-client-service.html",
         "/docs-client-service/**",
