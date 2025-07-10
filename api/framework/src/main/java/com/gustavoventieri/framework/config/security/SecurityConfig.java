@@ -27,8 +27,6 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC_MATCHERS = {
         "/api/v1/auth/**",
-        "/api/v1/email-confirmation/**",
-        "/api/v1/reset-password/**",
         "/docs/index.html",
         "/docs-client-service.html",
         "/docs-client-service/**",
