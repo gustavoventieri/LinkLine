@@ -45,15 +45,15 @@ A maioria das soluções de chat disponíveis atualmente são fechadas, pouco cu
 ### 🔧 Back-End
 
 <p align="left">
-  <img src="https://skillicons.dev/icons?i=ts,nodejs,express,prisma,postgresql,docker,jest" />
+  <img src="https://skillicons.dev/icons?i=java,spring,hibernate,postgresql,docker" />
 </p>
 
-- **TypeScript** • Tipagem estática para maior segurança no desenvolvimento
-- **Node.js + Express** • API REST rápida, performática e extensível
-- **Prisma** • ORM moderno com migrations e tipagem automática
+- **Java** • Linguagem robusta e orientada a objetos com vasto ecossistema
+- **Spring Boot** • API REST rápida, performática e extensível
+- **Hibernate** • ORM moderno com migrations e tipagem automática
 - **PostgreSQL** • Banco de dados relacional confiável e escalável
 - **Docker** • Padronização de ambiente e deploy facilitado
-- **Jest** • Testes automatizados com alta cobertura
+- **JUnit** • Testes automatizados com alta cobertura
 - **Swagger** • Documentação interativa da API
 
 ### 💻 Front-End
