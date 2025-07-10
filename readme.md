@@ -2,7 +2,7 @@
 
 **Link Line** é um sistema de chat **seguro**, **moderno** e **inovador**, construído do zero com foco em **comunicação eficiente**, **escalabilidade**, e **experiência do usuário**. A proposta central é oferecer uma plataforma completa de mensagens em tempo real, pensada para **ambientes profissionais, educacionais ou sociais**, onde a confiabilidade na troca de informações é essencial.
 
-O projeto nasce da necessidade crescente por soluções de **mensageria personalizáveis**, de **código aberto**, que não dependam de grandes provedores e possam ser integradas a diversos tipos de aplicações. Com uma **arquitetura modularizada** e uso de tecnologias modernas como **Node.js**, **React**, **Docker** e **Prisma**, o Link Line garante **flexibilidade no desenvolvimento**, **segurança no armazenamento de dados** e **baixa latência na comunicação**.
+O projeto nasce da necessidade crescente por soluções de **mensageria personalizáveis**, de **código aberto**, que não dependam de grandes provedores e possam ser integradas a diversos tipos de aplicações. Com uma **arquitetura modularizada** e uso de tecnologias modernas como **SpringBoot**, **React**, **Docker** e **Hibernate**, o Link Line garante **flexibilidade no desenvolvimento**, **segurança no armazenamento de dados** e **baixa latência na comunicação**.
 
 Ideal para startups, equipes de desenvolvimento, plataformas educacionais, ou qualquer sistema que necessite de **comunicação integrada e segura**, o Link Line é uma base sólida para escalar soluções de chat com qualidade de produção.
 
@@ -88,7 +88,7 @@ docker-compose up --build
 ### 3. Acesse o projeto
 
 * Front-end: `http://localhost:5173`
-* Back-end (Swagger): `http://localhost:3000/swagger/api-docs`
+* Back-end (Swagger): `http://localhost:8080/swagger/api-docs`
 
 ---
 
@@ -97,7 +97,7 @@ docker-compose up --build
 A API está documentada com **Swagger** e pode ser acessada em:
 
 ```
-http://localhost:3000/api-docs
+http://localhost:8080/api-docs
 ```
 
 Você pode testar todas as rotas diretamente no navegador com exemplos de payloads, headers, autenticação e mais.
