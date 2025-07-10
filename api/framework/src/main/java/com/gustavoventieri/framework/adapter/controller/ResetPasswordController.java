@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
  * Expondo endpoints para gerenciamento completo do processo de reset de senha por e-mail.
  */
 @RestController
-@RequestMapping("/api/auth/reset-password")
+@RequestMapping("/api/v1/auth/reset-password")
 @AllArgsConstructor
 @Validated
 public class ResetPasswordController {

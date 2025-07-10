@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
  * such as login, registration, and token validation.
  */
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @AllArgsConstructor
 @Slf4j
 public class AuthController {

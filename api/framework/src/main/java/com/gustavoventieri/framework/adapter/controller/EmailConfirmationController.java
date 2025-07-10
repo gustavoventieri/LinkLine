@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
  * Expõe endpoints para envio inicial, reenvio e verificação de códigos.
  */
 @RestController
-@RequestMapping("/api/auth/email-confirmation")
+@RequestMapping("/api/v1/auth/email-confirmation")
 @AllArgsConstructor
 @Slf4j
 @Validated
