@@ -1,0 +1,61 @@
+services:
+  linkline-db:
+    image: postgres:17
+    container_name: linkline-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - linkline_pgdata:/var/lib/postgresql/data
+    networks:
+      - linkline-network
+
+  linkline-app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: linkline-app
+    environment:
+      # Banco de Dados
+      DB_URL: ${DB_URL}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SPRING_DATASOURCE_URL: ${DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
+      SPRING_JPA_SHOW_SQL: ${SPRING_JPA_SHOW_SQL}
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: ${DB_DATABASE_PLATFORM}
+
+      # JWT
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_EXPIRATION_HOURS: ${JWT_EXPIRATION_HOURS}
+
+      # SMTP
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+
+      # Swagger
+      SWAGGER_PATH: ${SWAGGER_PATH}
+
+      # Spring Boot server port
+      SERVER_PORT: 8080
+    depends_on:
+      - linkline-db
+    ports:
+      - "${APP_PORT}:8080"
+    networks:
+      - linkline-network
+
+volumes:
+  linkline_pgdata:
+
+networks:
+  linkline-network:
