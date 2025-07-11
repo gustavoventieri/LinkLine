@@ -5,10 +5,11 @@ import java.util.UUID;
 
 import org.gustavoventieri.domain.enums.RequestStatus;
 
-public record ChatRequestDomain(
+public record FriendshipDomain(
     UUID id,
-    UserDomain sender,
-    UserDomain receiver,
+    UserDomain user,
+    UserDomain friend,
+    UserDomain requestedBy,
     RequestStatus status,
     LocalDateTime createdAt
 ) {}

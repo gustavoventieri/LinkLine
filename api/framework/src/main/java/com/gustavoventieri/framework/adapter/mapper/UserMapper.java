@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 public class UserMapper {
 
-    // Mapeamento básico: apenas campos primitivos
     public static User toEntityBasic(UserDomain domain) {
         if (domain == null) return null;
 
@@ -22,8 +21,9 @@ public class UserMapper {
             null,  // chats
             null,  // messagesSent
             null,  // messagesReceived
-            null,  // sentChatRequests
-            null   // receivedChatRequests
+            null,  // friendshipsUser
+            null,  // friendshipsFriend
+            null   // friendshipsRequested
         );
     }
 
@@ -41,12 +41,12 @@ public class UserMapper {
             null,  // chats
             null,  // messagesSent
             null,  // messagesReceived
-            null,  // sentChatRequests
-            null   // receivedChatRequests
+            null,  // friendshipsUser
+            null,  // friendshipsFriend
+            null   // friendshipsRequested
         );
     }
 
-    // Mapeamento completo: incluindo relacionamentos
     public static User toEntityComplete(UserDomain domain) {
         if (domain == null) return null;
 
@@ -67,11 +67,14 @@ public class UserMapper {
             domain.messagesReceived() != null ? domain.messagesReceived().stream()
                 .map(MessageMapper::toEntityBasic)
                 .collect(Collectors.toSet()) : null,
-            domain.sentChatRequests() != null ? domain.sentChatRequests().stream()
-                .map(ChatRequestMapper::toEntityBasic)
+            domain.friendshipsUser() != null ? domain.friendshipsUser().stream()
+                .map(FriendshipMapper::toEntityBasic)
                 .collect(Collectors.toSet()) : null,
-            domain.receivedChatRequests() != null ? domain.receivedChatRequests().stream()
-                .map(ChatRequestMapper::toEntityBasic)
+            domain.friendshipsFriend() != null ? domain.friendshipsFriend().stream()
+                .map(FriendshipMapper::toEntityBasic)
+                .collect(Collectors.toSet()) : null,
+            domain.friendshipsRequested() != null ? domain.friendshipsRequested().stream()
+                .map(FriendshipMapper::toEntityBasic)
                 .collect(Collectors.toSet()) : null
         );
     }
@@ -96,11 +99,14 @@ public class UserMapper {
             entity.getMessagesReceived() != null ? entity.getMessagesReceived().stream()
                 .map(MessageMapper::toDomainBasic)
                 .collect(Collectors.toSet()) : null,
-            entity.getSentChatRequests() != null ? entity.getSentChatRequests().stream()
-                .map(ChatRequestMapper::toDomainBasic)
+            entity.getFriendshipsUser() != null ? entity.getFriendshipsUser().stream()
+                .map(FriendshipMapper::toDomainBasic)
                 .collect(Collectors.toSet()) : null,
-            entity.getReceivedChatRequests() != null ? entity.getReceivedChatRequests().stream()
-                .map(ChatRequestMapper::toDomainBasic)
+            entity.getFriendshipsFriend() != null ? entity.getFriendshipsFriend().stream()
+                .map(FriendshipMapper::toDomainBasic)
+                .collect(Collectors.toSet()) : null,
+            entity.getFriendshipsRequested() != null ? entity.getFriendshipsRequested().stream()
+                .map(FriendshipMapper::toDomainBasic)
                 .collect(Collectors.toSet()) : null
         );
     }

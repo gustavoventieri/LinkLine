@@ -3,7 +3,7 @@ package org.gustavoventieri.domain.service;
 import java.util.Map;
 import java.util.UUID;
 
-public interface ChatRequestService {
+public interface FriendshipService {
 
     void createChatRequest(UUID senderId, String receiverUsername);
 

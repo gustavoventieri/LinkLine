@@ -14,7 +14,8 @@ public record UserDomain(
     LocalDateTime updatedAt,
     Set<ChatDomain> chats,                     
     Set<MessageDomain> messagesSent,            
-    Set<MessageDomain> messagesReceived,        
-    Set<ChatRequestDomain> sentChatRequests,    
-    Set<ChatRequestDomain> receivedChatRequests 
+    Set<MessageDomain> messagesReceived,  
+    Set<FriendshipDomain> friendshipsUser,    
+    Set<FriendshipDomain> friendshipsFriend,
+    Set<FriendshipDomain> friendshipsRequested
 ) {}

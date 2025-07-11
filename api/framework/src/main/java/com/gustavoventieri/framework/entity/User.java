@@ -2,28 +2,15 @@ package com.gustavoventieri.framework.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Getter
@@ -46,7 +33,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = true)  
+    @Column(nullable = true)
     private String avatarUrl;
 
     @CreationTimestamp
@@ -55,25 +42,30 @@ public class User {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
+    // === Chats ===
     @JsonBackReference(value = "chat-participants")
     @ManyToMany(mappedBy = "participants")
     private Set<Chat> chats;
 
+    // === Mensagens ===
     @JsonManagedReference(value = "messages-sent")
-    @OneToMany(mappedBy = "senderId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Message> messagesSent;
 
     @JsonManagedReference(value = "messages-received")
-    @OneToMany(mappedBy = "receiverId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Message> messagesReceived;
 
-    @JsonManagedReference(value = "sent-requests")
-    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ChatRequest> sentChatRequests;
+    // === Amizades ===
+    @JsonManagedReference(value = "user-friendships")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Friendship> friendshipsUser;
 
-    @JsonManagedReference(value = "received-requests")
-    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ChatRequest> receivedChatRequests;
+    @JsonManagedReference(value = "friend-friendships")
+    @OneToMany(mappedBy = "friend", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Friendship> friendshipsFriend;
 
-
+    @JsonManagedReference(value = "requested-by-friendships")
+    @OneToMany(mappedBy = "requestedBy", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Friendship> friendshipsRequested;
 }

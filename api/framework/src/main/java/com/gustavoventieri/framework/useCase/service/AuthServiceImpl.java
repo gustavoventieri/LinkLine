@@ -118,7 +118,9 @@ public class AuthServiceImpl implements AuthService {
             new HashSet<>(),
             new HashSet<>(),
             new HashSet<>(),
+            new HashSet<>(),
             new HashSet<>()
+
         );
 
         UserDomain savedUser = userRepositoryImpl.save(UserMapper.toDomainComplete(newUser));
