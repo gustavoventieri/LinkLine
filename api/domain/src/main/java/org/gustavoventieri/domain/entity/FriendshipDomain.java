@@ -11,5 +11,6 @@ public record FriendshipDomain(
     UserDomain friend,
     UserDomain requestedBy,
     RequestStatus status,
-    LocalDateTime createdAt
+    LocalDateTime createdAt,
+    LocalDateTime updatedAt
 ) {}

@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.gustavoventieri.domain.enums.RequestStatus;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import java.time.LocalDateTime;
@@ -44,4 +46,8 @@ public class Friendship {
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 }
