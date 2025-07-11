@@ -15,7 +15,6 @@ public class MessageMapper {
             domain.content(),
             domain.sentAt(),
             null, // sender
-            null, // receiver
             null  // chat
         );
     }
@@ -28,7 +27,6 @@ public class MessageMapper {
             entity.getContent(),
             entity.getSentAt(),
             null, // sender
-            null, // receiver
             null  // chat
         );
     }
@@ -37,7 +35,6 @@ public class MessageMapper {
         if (domain == null) return null;
 
         User sender = UserMapper.toEntityBasic(domain.sender());
-        User receiver = UserMapper.toEntityBasic(domain.receiver());
         Chat chat = ChatMapper.toEntityBasic(domain.chat());
 
         return new Message(
@@ -45,7 +42,6 @@ public class MessageMapper {
             domain.content(),
             domain.sentAt(),
             sender,
-            receiver,
             chat
         );
     }
@@ -57,8 +53,7 @@ public class MessageMapper {
             entity.getId(),
             entity.getContent(),
             entity.getSentAt(),
-            UserMapper.toDomainBasic(entity.getSenderId()),
-            UserMapper.toDomainBasic(entity.getReceiverId()),
+            UserMapper.toDomainBasic(entity.getSender()),
             ChatMapper.toDomainBasic(entity.getChatId())
         );
     }

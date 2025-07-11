@@ -20,7 +20,6 @@ public class UserMapper {
             domain.updatedAt(),
             null,  // chats
             null,  // messagesSent
-            null,  // messagesReceived
             null,  // friendshipsUser
             null,  // friendshipsFriend
             null   // friendshipsRequested
@@ -40,8 +39,7 @@ public class UserMapper {
             entity.getUpdatedAt(),
             null,  // chats
             null,  // messagesSent
-            null,  // messagesReceived
-            null,  // friendshipsUser
+            null,  // friendshipsUsers
             null,  // friendshipsFriend
             null   // friendshipsRequested
         );
@@ -62,9 +60,6 @@ public class UserMapper {
                 .map(ChatMapper::toEntityBasic)
                 .collect(Collectors.toSet()) : null,
             domain.messagesSent() != null ? domain.messagesSent().stream()
-                .map(MessageMapper::toEntityBasic)
-                .collect(Collectors.toSet()) : null,
-            domain.messagesReceived() != null ? domain.messagesReceived().stream()
                 .map(MessageMapper::toEntityBasic)
                 .collect(Collectors.toSet()) : null,
             domain.friendshipsUser() != null ? domain.friendshipsUser().stream()
@@ -94,9 +89,6 @@ public class UserMapper {
                 .map(ChatMapper::toDomainBasic)
                 .collect(Collectors.toSet()) : null,
             entity.getMessagesSent() != null ? entity.getMessagesSent().stream()
-                .map(MessageMapper::toDomainBasic)
-                .collect(Collectors.toSet()) : null,
-            entity.getMessagesReceived() != null ? entity.getMessagesReceived().stream()
                 .map(MessageMapper::toDomainBasic)
                 .collect(Collectors.toSet()) : null,
             entity.getFriendshipsUser() != null ? entity.getFriendshipsUser().stream()

@@ -16,7 +16,8 @@ public class FriendshipMapper {
             null,
             null, 
             domain.status(),
-            domain.createdAt()
+            domain.createdAt(),
+            domain.updatedAt()
         );
     }
 
@@ -29,7 +30,9 @@ public class FriendshipMapper {
             null, // friend
             null, // requestedBy
             entity.getStatus(),
-            entity.getCreatedAt()
+            entity.getCreatedAt(),
+            entity.getUpdatedAt()
+
         );
     }
 
@@ -46,7 +49,9 @@ public class FriendshipMapper {
             friend,
             requestedBy,
             domain.status(),
-            domain.createdAt()
+            domain.createdAt(),
+            domain.updatedAt()
+
         );
     }
 
@@ -59,7 +64,8 @@ public class FriendshipMapper {
             UserMapper.toDomainBasic(entity.getFriend()),
             UserMapper.toDomainBasic(entity.getRequestedBy()),
             entity.getStatus(),
-            entity.getCreatedAt()
+            entity.getCreatedAt(),
+            entity.getUpdatedAt()
         );
     }
 }
