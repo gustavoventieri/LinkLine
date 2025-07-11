@@ -52,10 +52,6 @@ public class User {
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Message> messagesSent;
 
-    @JsonManagedReference(value = "messages-received")
-    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Message> messagesReceived;
-
     // === Amizades ===
     @JsonManagedReference(value = "user-friendships")
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
