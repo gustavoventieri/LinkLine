@@ -118,7 +118,6 @@ public class AuthServiceImpl implements AuthService {
             new HashSet<>(),
             new HashSet<>(),
             new HashSet<>(),
-            new HashSet<>(),
             new HashSet<>()
 
         );
