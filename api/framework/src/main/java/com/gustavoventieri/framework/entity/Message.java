@@ -45,12 +45,7 @@ public class Message {
     @JsonBackReference(value = "messages-sent")
     @ManyToOne(optional = false)
     @JoinColumn(name = "sender_id", nullable = false)
-    private User senderId;
-
-    @JsonBackReference(value = "messages-received")
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "receiver_id", nullable = false)
-    private User receiverId;
+    private User sender;
 
     @JsonBackReference(value = "chat-messages")
     @ManyToOne

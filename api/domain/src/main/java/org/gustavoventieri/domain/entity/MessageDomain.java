@@ -8,6 +8,5 @@ public record MessageDomain(
     String content,
     LocalDateTime sentAt,
     UserDomain sender,
-    UserDomain receiver,
     ChatDomain chat
 ) {}
