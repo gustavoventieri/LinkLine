@@ -19,8 +19,7 @@
     <properties>
         <java.version>21</java.version>
         <spring-cloud.version>2025.0.0</spring-cloud.version>
-        <bucket4j.version>8.3.0</bucket4j.version>
-        <lettuce.version>6.3.2.RELEASE</lettuce.version>
+        <bucket4j.version>8.14.0</bucket4j.version>
     </properties>
 
     <dependencies>
@@ -64,6 +63,35 @@
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
 
+         <!-- Spring Boot Redis -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!-- Bucket4j Core -->
+        <dependency>
+            <groupId>com.github.vladimir-bukhtoyarov</groupId>
+            <artifactId>bucket4j-core</artifactId>
+            <version>8.0.1</version>
+        </dependency>
+
+        <!-- Bucket4j Redis Extension -->
+        <dependency>
+            <groupId>com.github.vladimir-bukhtoyarov</groupId>
+            <artifactId>bucket4j-redis</artifactId>
+            <version>8.0.1</version>
+        </dependency>
+
+        <!-- Lettuce Redis Client (já vem com spring-boot-starter-data-redis, mas só pra garantir) -->
+        <dependency>
+            <groupId>io.lettuce</groupId>
+            <artifactId>lettuce-core</artifactId>
+        </dependency>
+
+                                        
+
+
 
         <!-- Outras dependências -->
         <dependency>
@@ -89,7 +117,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.15.2</version>
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
