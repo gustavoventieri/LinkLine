@@ -1,5 +1,6 @@
 package com.gustavoventieri.framework.config.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,42 +16,34 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.gustavoventieri.framework.config.handler.CustomAuthenticationEntryPoint;
 
-import lombok.RequiredArgsConstructor;
-
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final SecurityFilter securityFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
-    private static final String[] PUBLIC_MATCHERS = {
-        "/api/v1/auth/**",
-        "/docs/index.html",
-        "/docs-client-service.html",
-        "/docs-client-service/**",
-        "/v3/api-docs/**",
-        "/swagger-ui-custom.html",
-        "/swagger-ui.html",
-        "/swagger-ui/**",
-        "/webjars/**",
-        "/configuration/**",
-        "/swagger-resources/**"
-    };
+    private final String[] publicMatchers;
+
+    public SecurityConfig(SecurityFilter securityFilter,
+            CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
+            @Value("spring.security.public-matchers") String[] publicMatchers) {
+        this.publicMatchers = publicMatchers;
+        this.securityFilter = securityFilter;
+        this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(Customizer.withDefaults())
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(PUBLIC_MATCHERS).permitAll()
-                .anyRequest().authenticated()
-            )
-            .exceptionHandling(exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint))
-            .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
+                .cors(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(publicMatchers).permitAll()
+                        .anyRequest().authenticated())
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint))
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -62,7 +55,8 @@ public class SecurityConfig {
 
     // Para injetar AuthenticationManager, usado por exemplo no login
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 }

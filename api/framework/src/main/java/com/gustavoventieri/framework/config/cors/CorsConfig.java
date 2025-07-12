@@ -1,5 +1,6 @@
 package com.gustavoventieri.framework.config.cors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -7,11 +8,17 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
+    private final String[] allowedOrigins;
+
+    public CorsConfig(
+    @Value("${spring.cors.allowed-origins}") String[] allowedOrigins) {
+        this.allowedOrigins = allowedOrigins;
+    }
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // Aplica o CORS a todos os endpoints
-
-                .allowedOrigins( "http://localhost:5173", "https://8t0866rg-5173.brs.devtunnels.ms") 
+        registry.addMapping("/**") 
+                .allowedOrigins(allowedOrigins) 
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") 
                 .allowedHeaders("*") 
                 .allowCredentials(true)
