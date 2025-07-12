@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.gustavoventieri.framework.config.redis.redis_bucket4j.RedisBucket4jRateLimiter;
+import com.gustavoventieri.framework.config.ratelimit.redis_bucket4j.RedisBucket4jRateLimiter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
