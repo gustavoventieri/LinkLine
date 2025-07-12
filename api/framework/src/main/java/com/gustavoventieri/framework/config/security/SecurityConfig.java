@@ -22,15 +22,15 @@ public class SecurityConfig {
 
     private final SecurityFilter securityFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-
     private final String[] publicMatchers;
 
     public SecurityConfig(SecurityFilter securityFilter,
             CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
-            @Value("spring.security.public-matchers") String[] publicMatchers) {
+            @Value("${spring.security.public-matchers}") String[] publicMatchers) {
         this.publicMatchers = publicMatchers;
         this.securityFilter = securityFilter;
         this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
+
     }
 
     @Bean

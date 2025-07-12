@@ -20,16 +20,17 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private final String pathPrefix;
 
-    public RateLimitFilter(RedisBucket4jRateLimiter rateLimiter, @Value("spring.rate-limit.path-prefix") String pathPrefix) {
+    public RateLimitFilter(RedisBucket4jRateLimiter rateLimiter,
+            @Value("${spring.rate-limit.path-prefix}") String pathPrefix) {
         this.rateLimiter = rateLimiter;
         this.pathPrefix = pathPrefix;
     }
+
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
+            FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
 
         if (path.startsWith(pathPrefix)) {
@@ -53,6 +54,4 @@ public class RateLimitFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-
 }
-

@@ -4,9 +4,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import org.gustavoventieri.domain.ratelimit.RateLimiter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import com.gustavoventieri.framework.config.ratelimit.props.RateLimitProperties;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
@@ -23,30 +22,39 @@ public class RedisBucket4jRateLimiter implements RateLimiter {
     private LettuceBasedProxyManager buckets;
     private BucketConfiguration config;
     private final StatefulRedisConnection<byte[], byte[]> connection;
-    private final RateLimitProperties rateLimitProperties;
+
+    private final int requests;
+    private final int refillInterval;
+    private final int expiration;
 
     public RedisBucket4jRateLimiter(
             StatefulRedisConnection<byte[], byte[]> connection,
-            RateLimitProperties rateLimitProperties) {
+            @Value("${spring.rate-limit.requests}") int requests,
+            @Value("${spring.rate-limit.refil-interval}") int refillInterval,
+            @Value("${spring.rate-limit.expiration}") int expiration) {
         this.connection = connection;
-        this.rateLimitProperties = rateLimitProperties;
+        this.requests = requests;
+        this.refillInterval = refillInterval;
+        this.expiration = expiration;
     }
+
+    /**
+     * Permite até 10 requisições a cada 15 minutos por chave (IP).
+     * Expira o estado do bucket após 10 minutos de inatividade.
+     */
 
     @PostConstruct
     public void init() {
         try {
             ExpirationAfterWriteStrategy expirationStrategy = ExpirationAfterWriteStrategy
-                    .fixedTimeToLive(Duration.ofMinutes(rateLimitProperties.getExpiration()));
+                    .fixedTimeToLive(Duration.ofMinutes(expiration));
 
             this.buckets = LettuceBasedProxyManager.builderFor(connection)
                     .withExpirationStrategy(expirationStrategy)
                     .build();
 
             this.config = BucketConfiguration.builder()
-                    .addLimit(Bandwidth.classic(
-                            rateLimitProperties.getRequests(),
-                            Refill.greedy(rateLimitProperties.getRequests(),
-                                    Duration.ofMinutes(rateLimitProperties.getRefillInterval()))))
+                    .addLimit(Bandwidth.classic(requests, Refill.greedy(requests, Duration.ofMinutes(refillInterval))))
                     .build();
         } catch (Exception e) {
             throw new IllegalStateException("Failed to initialize RedisBucket4jRateLimiter", e);
