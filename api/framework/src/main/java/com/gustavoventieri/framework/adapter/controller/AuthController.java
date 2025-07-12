@@ -18,7 +18,7 @@ import com.gustavoventieri.framework.adapter.dto.request.RegisterRequestImpl;
 import com.gustavoventieri.framework.useCase.service.AuthServiceImpl;
 import com.gustavoventieri.framework.useCase.utils.JWTUtils;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @RestController
 @RequestMapping("/api/v1/auth")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class AuthController {
 
@@ -91,7 +91,7 @@ public class AuthController {
 
         String token = authServiceImpl.register(
             registerRequestImpl.email(),
-            registerRequestImpl.code().toString(),
+            registerRequestImpl.code(),
             registerRequestImpl.avatarUrl()
         );
 
