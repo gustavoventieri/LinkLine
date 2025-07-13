@@ -64,8 +64,7 @@ export const Chats = () => {
   useEffect(() => {
     const getAllChats = async () => {
       try {
-        const response = await api.get("/private-chat/get");
-        setChats(response.data.chats || []);
+        setChats([]);
       } catch (err) {
         console.error("Erro ao buscar chats:", err);
         setChats([]);
@@ -92,8 +91,7 @@ export const Chats = () => {
   const loadMessages = async (chatId: string) => {
     setLoadingMessages(true);
     try {
-      const response = await api.get(`/private-chats/get/${chatId}`);
-      setMessages(response.data.messages || []);
+      setMessages([]);
     } catch (error) {
       console.error("Erro ao carregar mensagens:", error);
       setMessages([]);
@@ -268,7 +266,7 @@ export const Chats = () => {
                 justifyContent="space-between"
                 mt={mdDown ? 0 : 3}
                 px={mdDown ? 0 : 2}
-                py={ 2}
+                py={2}
                 boxShadow={3}
                 borderRadius={mdDown ? 0 : 2}
               >
@@ -353,7 +351,12 @@ export const Chats = () => {
 
             {/* Campo de envio */}
             {selectedChat && (
-              <Box display="flex" py={2} px={mdDown ? 1 : 0} pl={mdDown ? 2.5 : 0}>
+              <Box
+                display="flex"
+                py={2}
+                px={mdDown ? 1 : 0}
+                pl={mdDown ? 2.5 : 0}
+              >
                 <TextField
                   fullWidth
                   sx={{

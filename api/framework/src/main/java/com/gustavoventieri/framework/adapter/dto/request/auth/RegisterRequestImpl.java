@@ -1,4 +1,4 @@
-package com.gustavoventieri.framework.adapter.dto.request;
+package com.gustavoventieri.framework.adapter.dto.request.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

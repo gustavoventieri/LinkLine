@@ -41,7 +41,7 @@ public class Friendship {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private RequestStatus status = RequestStatus.PENDING;
+    private RequestStatus status;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

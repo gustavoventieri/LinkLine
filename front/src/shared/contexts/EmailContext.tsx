@@ -1,29 +1,25 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState } from "react";
 
-type EmailContextType = {
+interface EmailContextType {
   email: string;
   setEmail: (email: string) => void;
-  clearEmail: () => void;
-};
+}
 
-const EmailContext = createContext<EmailContextType | undefined>(undefined);
+const EmailContext = createContext<EmailContextType>({
+  email: "",
+  setEmail: () => {},
+});
 
-export const EmailProvider = ({ children }: { children: ReactNode }) => {
+export const EmailProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [email, setEmail] = useState("");
 
-  const clearEmail = () => setEmail("");
-
   return (
-    <EmailContext.Provider value={{ email, setEmail, clearEmail }}>
+    <EmailContext.Provider value={{ email, setEmail }}>
       {children}
     </EmailContext.Provider>
   );
 };
 
-export const useEmail = (): EmailContextType => {
-  const context = useContext(EmailContext);
-  if (!context) {
-    throw new Error("useEmail must be used within an EmailProvider");
-  }
-  return context;
-};
+export const useEmail = () => useContext(EmailContext);

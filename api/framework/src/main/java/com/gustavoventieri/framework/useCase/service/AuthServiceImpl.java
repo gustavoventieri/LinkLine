@@ -38,7 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthServiceImpl implements AuthService {
 
-
     private final EmailConfirmationRepositoryImpl verificationRepositoryImpl;
     private final UserRepositoryImpl userRepositoryImpl;
     private final PasswordEncoder passwordEncoder;
@@ -51,8 +50,8 @@ public class AuthServiceImpl implements AuthService {
      * @param email    o email do usuário
      * @param password a senha fornecida
      * @return token JWT para acesso autorizado
-     * @throws NotFound       se o usuário não for encontrado
-     * @throws InvalidData    se a senha estiver incorreta
+     * @throws NotFound            se o usuário não for encontrado
+     * @throws InvalidData         se a senha estiver incorreta
      * @throws InternalServerError se o token JWT não puder ser gerado corretamente
      */
     @Override
@@ -84,7 +83,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * Registra um novo usuário após validar o código de verificação enviado por email.
+     * Registra um novo usuário após validar o código de verificação enviado por
+     * email.
      *
      * @param email     o email do usuário
      * @param code      o código de verificação recebido
@@ -99,26 +99,25 @@ public class AuthServiceImpl implements AuthService {
         log.info("Starting registration for email: {}", email);
 
         EmailConfirmationDomain emailVerificationRecord = verificationRepositoryImpl.findByEmailAndCode(email, code)
-        .filter(EmailConfirmationDomain::verified)
-        .orElseThrow(() -> {
-            log.warn("Invalid verification attempt. Email: {}, Code: {}", email, code);
-            return new Unauthorized("Invalid verification code or email.");
-        });
-   
+                .filter(EmailConfirmationDomain::verified)
+                .orElseThrow(() -> {
+                    log.warn("Invalid verification attempt. Email: {}, Code: {}", email, code);
+                    return new Unauthorized("Invalid verification code or email.");
+                });
 
         User newUser = new User(
-            null,
-            emailVerificationRecord.username(),
-            emailVerificationRecord.email(),
-            emailVerificationRecord.password(),
-            avatarUrl,
-            LocalDateTime.now(),
-            LocalDateTime.now(),
-            new HashSet<>(),
-            new HashSet<>(),
-            new HashSet<>(),
-            new HashSet<>(),
-            new HashSet<>()
+                null,
+                emailVerificationRecord.username(),
+                emailVerificationRecord.email(),
+                emailVerificationRecord.password(),
+                avatarUrl,
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                new HashSet<>(),
+                new HashSet<>(),
+                new HashSet<>(),
+                new HashSet<>(),
+                new HashSet<>()
 
         );
 
@@ -138,13 +137,13 @@ public class AuthServiceImpl implements AuthService {
         return token;
     }
 
-   @Override
+    @Override
     public Map<String, Object> isAuth(UUID userId) {
         userRepositoryImpl.findById(userId)
-            .orElseThrow(() -> {
-                log.warn("User not found or not authenticated. userId: {}", userId);
-                return new Unauthorized("User not authenticated");
-            });
+                .orElseThrow(() -> {
+                    log.warn("User not found or not authenticated. userId: {}", userId);
+                    return new Unauthorized("User not authenticated");
+                });
 
         Map<String, Object> response = new HashMap<>();
         response.put("message", "User is authenticated");

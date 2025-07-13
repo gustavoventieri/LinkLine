@@ -1,19 +1,21 @@
 package com.gustavoventieri.framework.adapter.controller;
 
-import com.gustavoventieri.framework.adapter.dto.request.ResendConfirmationEmailCodeRequestImpl;
-import com.gustavoventieri.framework.adapter.dto.request.SendConfirmationEmailCodeRequestImpl;
-import com.gustavoventieri.framework.adapter.dto.request.VerifyConfirmationEmailCodeRequestImpl;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.gustavoventieri.framework.adapter.dto.request.auth.email_confirmation.ResendConfirmationEmailCodeRequestImpl;
+import com.gustavoventieri.framework.adapter.dto.request.auth.email_confirmation.SendConfirmationEmailCodeRequestImpl;
+import com.gustavoventieri.framework.adapter.dto.request.auth.email_confirmation.VerifyConfirmationEmailCodeRequestImpl;
 import com.gustavoventieri.framework.useCase.service.EmailConfirmationServiceImpl;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
 
 /**
  * Controller responsável por gerenciar o fluxo de envio e verificação
@@ -41,7 +43,7 @@ public class EmailConfirmationController {
     @PostMapping("/send")
     public ResponseEntity<String> sendEmailConfirmationCode(@RequestBody @Valid SendConfirmationEmailCodeRequestImpl request) {
         log.info("Enviando código de confirmação para o email: {}", request.email());
-        emailConfirmationServiceImpl.sendConfirmationEmailCode(request.email(), request.name(), request.password());
+        emailConfirmationServiceImpl.sendConfirmationEmailCode(request.email(), request.username(), request.password());
         return ResponseEntity.status(HttpStatus.OK).body("Verification Email Sent");
     }
 

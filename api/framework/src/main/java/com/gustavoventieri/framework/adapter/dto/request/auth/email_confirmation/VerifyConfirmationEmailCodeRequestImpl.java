@@ -1,10 +1,10 @@
-package com.gustavoventieri.framework.adapter.dto.request;
+package com.gustavoventieri.framework.adapter.dto.request.auth.email_confirmation;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public record VerifyResetPasswordCodeRequestImpl(
+public record VerifyConfirmationEmailCodeRequestImpl(
     @NotBlank(message = "Email cannot be empty.")
     @Email
     String email, 
@@ -13,5 +13,6 @@ public record VerifyResetPasswordCodeRequestImpl(
     @Size(min = 6, message = "Code cannot be less than 6 characters.")
     @Size(max = 6, message = "Code cannot exceed 6 characters.")
     String code
-    ) {
-} 
+){
+    
+}

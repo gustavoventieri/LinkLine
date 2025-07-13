@@ -1,6 +1,5 @@
 package org.gustavoventieri.domain.repository;
 
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -10,9 +9,9 @@ import org.gustavoventieri.domain.enums.RequestStatus;
 
 public interface FriendshipRepository {
 
-    List<FriendshipDomain> getChatRequestsByStatus(UUID userId, RequestStatus status, boolean sent);
+    List<FriendshipDomain> getFriendShipByStatus(UUID userId, RequestStatus status, boolean sent);
 
-    FriendshipDomain create(UUID senderId, UUID receiverId);
+    FriendshipDomain save(FriendshipDomain friendshipDomain);
 
     Optional<FriendshipDomain> updateStatus(UUID requestId, RequestStatus status);
 
@@ -20,7 +19,7 @@ public interface FriendshipRepository {
 
     Optional<FriendshipDomain> findById(UUID requestId);
 
-    Optional<FriendshipDomain> findExisting(UUID senderId, UUID receiverId);
+    Optional<FriendshipDomain> findExisting(UUID userId, UUID friendId);
 
-    Optional<FriendshipDomain> findAcceptedBetweenUsers(UUID userId1, UUID userId2);
+    Optional<FriendshipDomain> findAcceptedBetweenUsers(UUID userId, UUID friendId);
 }

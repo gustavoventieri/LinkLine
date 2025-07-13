@@ -177,8 +177,7 @@ export const EmailVerification = () => {
         alignItems="center"
         borderRadius={1}
       >
-        <Paper
-          component={Box}
+        <Box
           display="flex"
           flexDirection="column"
           alignItems="center"
@@ -190,7 +189,7 @@ export const EmailVerification = () => {
             borderRadius: smDown ? 0 : 3,
             overflow: "hidden",
             boxShadow: smDown ? 0 : 10,
-            backgroundColor: smDown ? "transparent" : "primary.paper",
+            backgroundColor: mdDown ? "none" : "#1E2125",
           }}
         >
           <form onSubmit={handleSubmit(onSubmit)} style={{ width: "100%" }}>
@@ -281,6 +280,7 @@ export const EmailVerification = () => {
                   align="left"
                   ml={0.5}
                   mt={-5}
+                  sx={{ color: "gray" }}
                 >
                   Didn’t receive yet?{" "}
                   <Link
@@ -333,7 +333,7 @@ export const EmailVerification = () => {
               </Box>
             </Box>
           </form>
-        </Paper>
+        </Box>
       </Grid>
 
       <Snackbar

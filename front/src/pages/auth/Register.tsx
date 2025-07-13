@@ -87,7 +87,7 @@ export const Register = () => {
     try {
       setLoading(true); // Ativar o loading ao começar a requisição
       const payload = {
-        name: data.username.toLowerCase(),
+        username: data.username.toLowerCase(),
         email: data.email,
         password: data.password,
       };
@@ -95,10 +95,10 @@ export const Register = () => {
       const response = await api.post("/auth/email-confirmation/send", payload);
 
       if (response.status === 200) {
-        await setEmail(data.email);
+        setEmail(data.email);
         localStorage.setItem("authSession", "true");
         setTimeout(() => {
-          navigate("/email-verification", { replace: true });
+          navigate("/email-verification");
         }, 1000);
       }
     } catch (error: any) {

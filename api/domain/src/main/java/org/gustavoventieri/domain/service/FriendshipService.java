@@ -5,11 +5,11 @@ import java.util.UUID;
 
 public interface FriendshipService {
 
-    void createChatRequest(UUID senderId, String receiverUsername);
+    void createFriendship(UUID userId, String friendUsername);
 
-    void updateChatRequest(UUID chatRequestId, String newStatus);
+    void updateFriendship(UUID chatRequestId, String newStatus);
 
-    void deleteChatRequest(UUID userId, UUID receiverId);
+    void deleteFriendship(UUID userId, UUID friendId);
 
-    Map<String, Object> getChatRequestsByStatus(String type, String status, UUID userId);
+    Map<String, Object> getFriendshipsByStatus(String type, String status, UUID userId);
 }
