@@ -13,11 +13,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   ChatBubbleOutlineOutlined,
   DarkModeOutlined,
-  GroupOutlined,
   LightModeOutlined,
   Menu,
+  NotificationsOutlined,
   SearchOutlined,
   SettingsOutlined,
+  SmartToyOutlined,
 } from "@mui/icons-material";
 
 import { useAppThemeContext } from "../../contexts";
@@ -35,49 +36,44 @@ export const Sidebar: React.FC<ISidebarProps> = ({ showIcon }) => {
     theme.breakpoints.down("md")
   );
 
-  const topIconsStyle = {
-    height: 25,
-    width: 25,
-  };
-
-  const bottomIconsStyle = {
+  const iconsStyle = {
     height: 25,
     width: 25,
   };
 
   const navItems = [
     {
-      icon: <ChatBubbleOutlineOutlined sx={topIconsStyle} />,
+      icon: <ChatBubbleOutlineOutlined sx={iconsStyle} />,
       path: "/chats",
       label: "Chats",
     },
     {
-      icon: <GroupOutlined sx={topIconsStyle} />,
-      path: "/chat-requests",
-      label: "Chat Requests",
+      icon: <NotificationsOutlined sx={iconsStyle} />,
+      path: "/notifications",
+      label: "Notifications",
     },
     {
-      icon: <SearchOutlined sx={topIconsStyle} />,
+      icon: <SearchOutlined sx={iconsStyle} />,
       path: "/find-friends",
       label: "Search Friends",
     },
     {
-      icon: <ChatBubbleOutlineOutlined sx={topIconsStyle} />,
+      icon: <SmartToyOutlined sx={iconsStyle} />,
       path: "/ia",
       label: "Chats",
     },
     {
       icon:
         themeName === "light" ? (
-          <DarkModeOutlined sx={bottomIconsStyle} />
+          <DarkModeOutlined sx={iconsStyle} />
         ) : (
-          <LightModeOutlined sx={bottomIconsStyle} />
+          <LightModeOutlined sx={iconsStyle} />
         ),
       path: "",
       label: "Switch Theme",
     },
     {
-      icon: <SettingsOutlined sx={bottomIconsStyle} />,
+      icon: <SettingsOutlined sx={iconsStyle} />,
       path: "/settings",
       label: "Settings",
     },

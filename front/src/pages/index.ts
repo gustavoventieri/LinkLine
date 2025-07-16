@@ -6,6 +6,6 @@ export * from "./auth/reset-password/ResetPasswordCode";
 export * from "./auth/reset-password/ResetPasswordUpdate";
 
 export * from "./app/Chats";
-export * from "./app/ChatRequests";
+export * from "./app/Notifications";
 export * from "./app/FindFriends";
 export * from "./app/Settings";

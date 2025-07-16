@@ -31,7 +31,7 @@ interface Request {
 }
 // ...importações permanecem as mesmas
 
-export const ChatRequests = () => {
+export const Notifications = () => {
   const { themeName } = useAppThemeContext();
   const mdDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
   const smDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));

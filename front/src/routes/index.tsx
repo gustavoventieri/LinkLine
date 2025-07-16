@@ -10,7 +10,7 @@ import {
   ResetPasswordCode,
   ResetPasswordEmail,
   ResetPasswordUpdate,
-  ChatRequests,
+  Notifications,
   Settings,
 } from "../pages";
 import { PrivateAppLayout, PrivateAuthLayout } from "./layouts";
@@ -35,7 +35,7 @@ export const AppRoutes = () => {
         <Route path="/" element={<></>} />
         <Route path="/chats" element={<Chats />} />
         <Route path="/find-friends" element={<FindFriends />} />
-        <Route path="/chat-requests" element={<ChatRequests />} />
+        <Route path="/notifications" element={<Notifications />} />
         <Route path="/settings" element={<Settings />} />
         {/* Outras rotas privadas aqui */}
       </Route>
