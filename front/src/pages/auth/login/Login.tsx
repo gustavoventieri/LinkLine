@@ -28,13 +28,14 @@ import { yupResolver } from "@hookform/resolvers/yup";
 
 import {
   buttonStyle,
+  getContainerStyle,
   getFormStyle,
   getIconStyle,
   getInputStyle,
   getLinkStyle,
+  getLogoStyle,
   getTitleStyle,
 } from "./Login.styles";
-import { useAppThemeContext } from "../../../shared/contexts";
 import { api } from "../../../shared/services";
 
 const loginSchema = yup.object().shape({
@@ -60,15 +61,16 @@ export const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
-  const { themeName } = useAppThemeContext();
   const navigate = useNavigate();
   const theme = useTheme();
 
-  const inputStyle = getInputStyle(theme, themeName);
+  const inputStyle = getInputStyle(theme);
   const iconsStyles = getIconStyle(theme);
   const linkStyle = getLinkStyle(theme);
-  const titleStyle = getTitleStyle(theme, themeName, mdDown);
+  const titleStyle = getTitleStyle(theme, mdDown);
   const formStyle = getFormStyle(smDown);
+  const containerStyle = getContainerStyle(mdDown, theme);
+  const logoStyle = getLogoStyle(xxlUp, theme);
 
   const {
     handleSubmit,
@@ -129,16 +131,7 @@ export const Login = () => {
           justifyContent="flex-start"
           width="100%"
           height={mdDown ? "100vh" : "88vh"}
-          sx={{
-            borderRadius: mdDown ? 0 : 5,
-            overflow: "hidden",
-            boxShadow: mdDown ? 0 : 10,
-            backgroundColor: mdDown
-              ? "transparent"
-              : theme.palette.background.paper,
-            padding: 4,
-            gap: 5,
-          }}
+          sx={containerStyle}
         >
           <Box
             width={lgDown ? "100%" : "60%"}
@@ -274,18 +267,7 @@ export const Login = () => {
               justifyContent="center"
               mr={5}
             >
-              <Typography
-                sx={{
-                  fontFamily: '"Irish Grover", cursive',
-                  fontSize: xxlUp ? 150 : 110,
-                  color:
-                    themeName === "light"
-                      ? theme.palette.primary.main
-                      : "white",
-                }}
-              >
-                Link Line
-              </Typography>
+              <Typography sx={logoStyle}>Link Line</Typography>
             </Box>
           )}
         </Box>

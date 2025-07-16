@@ -26,11 +26,16 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import { useAppThemeContext } from "../../../shared/contexts";
 import { api } from "../../../shared/services";
 import { useNavigate } from "react-router-dom";
 import { useEmail } from "../../../shared/contexts/EmailContext";
-import { getIconStyle, getInputStyle } from "./Register.styles";
+import {
+  getContainerStyle,
+  getIconStyle,
+  getInputStyle,
+  getLogoStyle,
+  getTitleStyle,
+} from "./Register.styles";
 
 const schema = yup.object().shape({
   username: yup.string().required("Username is required"),
@@ -52,7 +57,6 @@ export const Register = () => {
   const lgDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("lg"));
   const xxlUp = useMediaQuery((theme: Theme) => theme.breakpoints.up("xxl"));
   const usernameRef = useRef<HTMLInputElement>(null);
-  const { themeName } = useAppThemeContext();
   const { setEmail } = useEmail();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -65,8 +69,11 @@ export const Register = () => {
   >("password");
   const [loading, setLoading] = useState(false);
 
-  const inputStyle = getInputStyle(theme, themeName);
+  const inputStyle = getInputStyle(theme);
   const iconStyle = getIconStyle(theme);
+  const contaienrStyle = getContainerStyle(mdDown, theme);
+  const logoStyle = getLogoStyle(xxlUp, theme);
+  const titleStyle = getTitleStyle(theme);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -116,12 +123,7 @@ export const Register = () => {
           justifyContent="center"
           alignItems="stretch"
           height={mdDown ? "100vh" : "88vh"}
-          sx={{
-            borderRadius: mdDown ? 0 : 5,
-            overflow: "hidden",
-            boxShadow: mdDown ? 0 : 10,
-            backgroundColor: theme.palette.background.paper,
-          }}
+          sx={contaienrStyle}
         >
           {!lgDown && (
             <Box
@@ -132,18 +134,7 @@ export const Register = () => {
               alignItems="center"
               ml={4}
             >
-              <Typography
-                sx={{
-                  fontFamily: '"Irish Grover", cursive',
-                  fontSize: xxlUp ? 150 : 110,
-                  color:
-                    themeName === "light"
-                      ? theme.palette.primary.main
-                      : "white",
-                }}
-              >
-                Link Line
-              </Typography>
+              <Typography sx={logoStyle}>Link Line</Typography>
             </Box>
           )}
 
@@ -161,9 +152,7 @@ export const Register = () => {
               fontWeight={900}
               mt={mdDown ? -8 : 0}
               align="center"
-              color={
-                themeName === "light" ? theme.palette.primary.main : "white"
-              }
+              color={titleStyle}
             >
               Register Account
             </Typography>

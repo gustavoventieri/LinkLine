@@ -1,4 +1,3 @@
-// EmailVerification.tsx
 import {
   Box,
   Button,
@@ -14,7 +13,6 @@ import {
   Theme,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import { useAppThemeContext } from "../../../shared/contexts";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -28,7 +26,6 @@ import {
   getButtonStyle,
   getTitleStyle,
   getSubtitleStyle,
-  getErrorStyle,
   getResendLinkStyle,
   getSnackbarStyle,
 } from "./EmailVerification.styles";
@@ -42,7 +39,7 @@ const schema = yup.object({
 
 export const EmailVerification = () => {
   const theme = useTheme();
-  // Removi themeName que não está mais sendo usado no styles
+
   const navigate = useNavigate();
   const { email } = useEmail();
 
@@ -56,13 +53,11 @@ export const EmailVerification = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
-  // Passa o theme para os estilos que precisam, e as flags de breakpoint
-  const containerStyle = getContainerStyle(smDown, mdDown);
+  const containerStyle = getContainerStyle(smDown, mdDown, theme);
   const inputStyle = getInputStyle(theme);
   const buttonStyle = getButtonStyle(theme);
   const titleStyle = getTitleStyle(theme, mdDown);
   const subtitleStyle = getSubtitleStyle(theme, mdDown);
-  const errorStyle = getErrorStyle;
   const resendLinkStyle = getResendLinkStyle(isResendDisabled, theme);
   const snackbarStyle = getSnackbarStyle;
 
@@ -219,9 +214,6 @@ export const EmailVerification = () => {
                     />
                   ))}
                 </Box>
-
-                {/* Erro já mostrado no helperText acima, pode remover esse Typography */}
-
                 <Typography
                   fontSize={16}
                   fontWeight={500}

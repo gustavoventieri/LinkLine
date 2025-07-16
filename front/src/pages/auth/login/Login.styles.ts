@@ -1,6 +1,21 @@
 import { Theme } from "@mui/material";
 
-export const getInputStyle = (theme: Theme, themeName: string) => ({
+export const getLogoStyle = (xxlUp: boolean, theme: Theme) => ({
+  fontFamily: '"Irish Grover", cursive',
+  fontSize: xxlUp ? 150 : 110,
+  color: theme.palette.mode === "light" ? theme.palette.primary.main : "white",
+});
+
+export const getContainerStyle = (mdDown: boolean, theme: Theme) => ({
+  borderRadius: mdDown ? 0 : 3,
+  overflow: "hidden",
+  boxShadow: mdDown ? 0 : 10,
+  backgroundColor: mdDown ? "transparent" : theme.palette.background.paper,
+  padding: 4,
+  gap: 5,
+});
+
+export const getInputStyle = (theme: Theme) => ({
   "& .MuiOutlinedInput-root": {
     borderRadius: 3,
     height: 55,
@@ -12,7 +27,7 @@ export const getInputStyle = (theme: Theme, themeName: string) => ({
     color: theme.palette.primary.main,
   },
   "& .MuiInputLabel-shrink": {
-    color: themeName === "light" ? theme.palette.text.primary : "white",
+    color: theme.palette.text.primary,
   },
 });
 
@@ -26,16 +41,12 @@ export const getLinkStyle = (theme: Theme) => ({
   color: theme.palette.primary.light,
 });
 
-export const getTitleStyle = (
-  theme: Theme,
-  themeName: string,
-  mdDown: boolean
-) => ({
+export const getTitleStyle = (theme: Theme, mdDown: boolean) => ({
   fontSize: mdDown ? 28 : 32,
   marginBottom: 4,
   fontWeight: 900,
   textAlign: "center",
-  color: themeName === "light" ? theme.palette.primary.main : "white",
+  color: theme.palette.mode === "light" ? theme.palette.primary.main : "white",
 });
 
 export const getFormStyle = (smDown: boolean) => ({

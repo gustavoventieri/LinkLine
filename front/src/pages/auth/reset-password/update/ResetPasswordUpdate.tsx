@@ -11,22 +11,27 @@ import {
   CircularProgress,
   InputAdornment,
   IconButton,
+  useTheme,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import { useAppThemeContext } from "../../../shared/contexts";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import { useNavigate } from "react-router-dom";
-import { api } from "../../../shared/services";
-import { useEmail } from "../../../shared/contexts/EmailContext";
 import {
   LockPersonOutlined,
   VisibilityOffOutlined,
   VisibilityOutlined,
 } from "@mui/icons-material";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { useNavigate } from "react-router-dom";
 
-// Schema de validação
+import { api } from "../../../../shared/services";
+import { useEmail } from "../../../../shared/contexts/EmailContext";
+import {
+  getContainerStyle,
+  getIconStyle,
+  getInputStyle,
+} from "./ResetPasswordUpdate.styles";
+
 const schema = yup.object({
   password: yup
     .string()
@@ -43,7 +48,8 @@ export const ResetPasswordUpdate = () => {
   const mdDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
   const navigate = useNavigate();
   const { email } = useEmail();
-  const { themeName } = useAppThemeContext();
+  const theme = useTheme();
+
   const emailRef = useRef<HTMLInputElement>(null);
   const [showPassword, setShowPassword] = useState<"" | "password">("password");
   const [showConfirmPassword, setShowConfirmPassword] = useState<
@@ -54,6 +60,10 @@ export const ResetPasswordUpdate = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isResendDisabled, setIsResendDisabled] = useState(false);
   const [resendTimer, setResendTimer] = useState(30);
+
+  const inputStyle = getInputStyle(theme);
+  const containerStyle = getContainerStyle(mdDown, theme);
+  const iconStyle = getIconStyle(theme);
 
   type FormData = yup.InferType<typeof schema>;
 
@@ -114,22 +124,6 @@ export const ResetPasswordUpdate = () => {
     }
   };
 
-  const inputStyle = {
-    "& .MuiOutlinedInput-root": {
-      borderRadius: 3,
-      height: 65,
-      "& fieldset": {
-        borderColor: "primary.main",
-      },
-    },
-    "& .MuiInputLabel-root.Mui-focused": {
-      color: "primary.main",
-    },
-    "& .MuiInputLabel-shrink": {
-      color: themeName === "light" ? "primary.text" : "white",
-    },
-  };
-
   const toggleShowPassword = () => {
     setShowPassword((prev) => (prev === "password" ? "" : "password"));
   };
@@ -162,13 +156,7 @@ export const ResetPasswordUpdate = () => {
           boxShadow={3}
           width="100%"
           height={"60vh"}
-          sx={{
-            borderRadius: mdDown ? 0 : 5,
-            overflowY: "auto",
-            boxShadow: mdDown ? 0 :10,
-            px: 2,
-            backgroundColor: mdDown ? "none" : "#1E2125",
-          }}
+          sx={containerStyle}
         >
           <form onSubmit={handleSubmit(onSubmit)} style={{ width: "100%" }}>
             <Box
@@ -190,7 +178,11 @@ export const ResetPasswordUpdate = () => {
                   fontWeight={900}
                   mb={-3}
                   align="center"
-                  color={themeName === "light" ? "primary.main" : "white"}
+                  color={
+                    theme.palette.mode === "light"
+                      ? theme.palette.primary.main
+                      : "white"
+                  }
                 >
                   Update Your Password
                 </Typography>
@@ -206,31 +198,16 @@ export const ResetPasswordUpdate = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start" sx={{ ml: 1 }}>
-                        <LockPersonOutlined
-                          color="primary"
-                          sx={{ width: 30, height: 30 }}
-                        />
+                        <LockPersonOutlined sx={iconStyle} />
                       </InputAdornment>
                     ),
                     endAdornment: (
                       <InputAdornment position="end" sx={{ mr: 1 }}>
                         <IconButton onClick={toggleShowPassword}>
                           {showPassword === "" ? (
-                            <VisibilityOffOutlined
-                              sx={{
-                                color: "primary.main",
-                                width: 36,
-                                height: 36,
-                              }}
-                            />
+                            <VisibilityOffOutlined sx={iconStyle} />
                           ) : (
-                            <VisibilityOutlined
-                              sx={{
-                                color: "primary.main",
-                                width: 36,
-                                height: 36,
-                              }}
-                            />
+                            <VisibilityOutlined sx={iconStyle} />
                           )}
                         </IconButton>
                       </InputAdornment>
@@ -249,31 +226,16 @@ export const ResetPasswordUpdate = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start" sx={{ ml: 1 }}>
-                        <LockPersonOutlined
-                          color="primary"
-                          sx={{ width: 30, height: 30 }}
-                        />
+                        <LockPersonOutlined sx={iconStyle} />
                       </InputAdornment>
                     ),
                     endAdornment: (
                       <InputAdornment position="end" sx={{ mr: 1 }}>
                         <IconButton onClick={toggleConfirmShowPassword}>
                           {showConfirmPassword === "" ? (
-                            <VisibilityOffOutlined
-                              sx={{
-                                color: "primary.main",
-                                width: 36,
-                                height: 36,
-                              }}
-                            />
+                            <VisibilityOffOutlined sx={iconStyle} />
                           ) : (
-                            <VisibilityOutlined
-                              sx={{
-                                color: "primary.main",
-                                width: 36,
-                                height: 36,
-                              }}
-                            />
+                            <VisibilityOutlined sx={iconStyle} />
                           )}
                         </IconButton>
                       </InputAdornment>
@@ -300,7 +262,9 @@ export const ResetPasswordUpdate = () => {
                   {isLoading ? (
                     <CircularProgress size={26} sx={{ color: "white" }} />
                   ) : (
-                    <Typography fontSize={14} fontWeight={500}>Update</Typography>
+                    <Typography fontSize={14} fontWeight={500}>
+                      Update
+                    </Typography>
                   )}
                 </Button>
               </Box>

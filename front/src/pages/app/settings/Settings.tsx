@@ -1,5 +1,5 @@
-import { BaseLayout } from "../../shared/layouts";
-import { api } from "../../shared/services";
+import { BaseLayout } from "../../../shared/layouts";
+import { api } from "../../../shared/services";
 
 export const Settings = () => {
   const handleCheckAuth = async () => {

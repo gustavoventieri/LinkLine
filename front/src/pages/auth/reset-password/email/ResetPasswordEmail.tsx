@@ -13,16 +13,20 @@ import {
   useTheme,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import { useAppThemeContext } from "../../../shared/contexts";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
-import { api } from "../../../shared/services";
-import { useEmail } from "../../../shared/contexts/EmailContext";
 import { MailOutline } from "@mui/icons-material";
 
-// Schema de validação
+import { api } from "../../../../shared/services";
+import { useEmail } from "../../../../shared/contexts/EmailContext";
+import {
+  getBoxFormStyle,
+  getTextFieldStyle,
+  submitButtonStyle,
+} from "./ResetPasswordEmail.styles";
+
 const schema = yup.object({
   email: yup.string().email().required("Email is required"),
 });
@@ -33,7 +37,6 @@ export const ResetPasswordEmail = () => {
 
   const navigate = useNavigate();
   const { setEmail } = useEmail();
-  const { themeName } = useAppThemeContext();
   const emailRef = useRef<HTMLInputElement>(null);
   const theme = useTheme();
 
@@ -96,6 +99,11 @@ export const ResetPasswordEmail = () => {
     }
   };
 
+  // Variáveis de estilos
+  const boxFormStyle = getBoxFormStyle(mdDown, theme);
+  const textFieldStyle = getTextFieldStyle(theme);
+  const buttonStyle = submitButtonStyle(theme);
+
   return (
     <Grid
       container
@@ -121,13 +129,7 @@ export const ResetPasswordEmail = () => {
           boxShadow={3}
           width="100%"
           height={"60vh"}
-          sx={{
-            borderRadius: mdDown ? 0 : 5,
-            overflowY: "auto",
-            boxShadow: mdDown ? 0 : 10,
-            px: 2,
-            backgroundColor: mdDown ? "none" : theme.palette.background.paper,
-          }}
+          sx={boxFormStyle}
         >
           <form onSubmit={handleSubmit(onSubmit)} style={{ width: "100%" }}>
             <Box
@@ -149,7 +151,9 @@ export const ResetPasswordEmail = () => {
                   fontWeight={900}
                   mb={-5}
                   align="center"
-                  color={themeName === "light" ? "primary.main" : "white"}
+                  color={
+                    theme.palette.mode === "light" ? "primary.main" : "white"
+                  }
                 >
                   Enter Your Email
                 </Typography>
@@ -159,7 +163,7 @@ export const ResetPasswordEmail = () => {
                   mb={-2}
                   fontWeight={400}
                   align="center"
-                  color={themeName === "light" ? "black" : "white"}
+                  color={theme.palette.mode === "light" ? "black" : "white"}
                 >
                   A code will be sent to your email address for resetting your
                   password.
@@ -174,22 +178,7 @@ export const ResetPasswordEmail = () => {
                   helperText={errors.email?.message}
                   variant="outlined"
                   fullWidth
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 3,
-                      height: 65,
-
-                      "& fieldset": {
-                        borderColor: "primary.main",
-                      },
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: "primary.main",
-                    },
-                    "& .MuiInputLabel-shrink": {
-                      color: themeName === "light" ? "primary.text" : "white",
-                    },
-                  }}
+                  sx={textFieldStyle}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start" sx={{ ml: 1 }}>
@@ -207,13 +196,7 @@ export const ResetPasswordEmail = () => {
                   variant="contained"
                   color="primary"
                   fullWidth
-                  sx={{
-                    borderRadius: 3,
-                    paddingY: 1.8,
-                    "&:hover": {
-                      backgroundColor: "primary.dark",
-                    },
-                  }}
+                  sx={buttonStyle}
                   disabled={isLoading}
                 >
                   {isLoading ? (

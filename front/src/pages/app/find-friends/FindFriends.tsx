@@ -11,11 +11,19 @@ import {
   Alert,
 } from "@mui/material";
 import { Diversity3Rounded, Search } from "@mui/icons-material";
-import { BaseLayout } from "../../shared/layouts";
-import { useAppThemeContext } from "../../shared/contexts";
+import { BaseLayout } from "../../../shared/layouts";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { api } from "../../shared/services";
-import { UserFoundCard, UserRelationshipStatus } from "../../shared/components";
+import { api } from "../../../shared/services";
+import {
+  UserFoundCard,
+  UserRelationshipStatus,
+} from "../../../shared/components";
+import {
+  getDiversityIcon,
+  getDiversityText,
+  getLeftPanel,
+  getSearchInput,
+} from "./FindFriends.styles";
 
 interface PotentialFriend {
   username: string;
@@ -29,7 +37,6 @@ function getRandomLetter() {
 }
 
 export const FindFriends = () => {
-  const { themeName } = useAppThemeContext();
   const theme = useTheme();
   const mdDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
   const smDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
@@ -41,6 +48,11 @@ export const FindFriends = () => {
   const [error, setError] = useState<string | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  const leftPanelStyle = getLeftPanel(theme);
+  const diversityIconStyle = getDiversityIcon(theme);
+  const diversityTextStyle = getDiversityText(theme);
+  const searchInputStyle = getSearchInput(theme, mdDown, smDown);
 
   const debounceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const debounce = <F extends (...args: any[]) => any>(
@@ -89,7 +101,6 @@ export const FindFriends = () => {
     debouncedFetchFriends(searchTerm);
   }, [searchTerm, debouncedFetchFriends]);
 
-  // Busca automática do lado esquerdo
   const [autoFriends, setAutoFriends] = useState<PotentialFriend[]>([]);
   const [loadingAutoFriends, setLoadingAutoFriends] = useState(false);
 
@@ -138,20 +149,19 @@ export const FindFriends = () => {
   return (
     <BaseLayout showIcon>
       <Box display="flex" height="100vh">
-        {/* ✅ Lado Esquerdo: lista automática */}
         {!mdDown && (
           <Box
             width="30%"
             height="100%"
             bgcolor={
-              themeName === "light"
+              theme.palette.mode === "light"
                 ? theme.palette.background.paper
                 : theme.palette.background.default
             }
             display="flex"
             flexDirection="column"
             p={2}
-            sx={{ borderRight: `1px solid ${theme.palette.divider}` }}
+            sx={leftPanelStyle}
           >
             <Box
               display="flex"
@@ -160,19 +170,10 @@ export const FindFriends = () => {
               mb={2}
               gap={1}
             >
-              <Diversity3Rounded
-                sx={{
-                  width: 80,
-                  height: 80,
-                  color:
-                    themeName === "dark"
-                      ? theme.palette.primary.main
-                      : theme.palette.primary.dark,
-                }}
-              />
+              <Diversity3Rounded sx={diversityIconStyle} />
               <Typography
                 variant="h6"
-                color={themeName === "dark" ? "grey.300" : "text.secondary"}
+                sx={diversityTextStyle}
                 textAlign="center"
               >
                 Pessoas que você deve conhecer
@@ -227,14 +228,13 @@ export const FindFriends = () => {
           height="100%"
           flexDirection="column"
           bgcolor={
-            themeName === "light"
+            theme.palette.mode === "light"
               ? theme.palette.background.default
               : theme.palette.background.paper
           }
           sx={{ pt: smDown ? 2 : 3 }}
           gap={3}
         >
-          {/* Campo de busca */}
           <Box display="flex" justifyContent="center" width="100%">
             <TextField
               variant="outlined"
@@ -248,36 +248,10 @@ export const FindFriends = () => {
                   </InputAdornment>
                 ),
               }}
-              sx={{
-                width: mdDown ? "100%" : "80%",
-                boxShadow: themeName === "light" ? 1 : 0,
-                borderRadius: "10px",
-                mx: smDown ? 1 : 3,
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "10px",
-                  height: "60px",
-                  backgroundColor:
-                    themeName === "light"
-                      ? "white"
-                      : theme.palette.background.default,
-                  "& fieldset": { borderColor: "transparent" },
-                  "&:hover fieldset": {
-                    borderColor: theme.palette.action.hover,
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "primary.main",
-                    borderWidth: "1px",
-                  },
-                },
-                "& .MuiInputBase-input": {
-                  paddingTop: "12px",
-                  paddingBottom: "12px",
-                },
-              }}
+              sx={searchInputStyle}
             />
           </Box>
 
-          {/* Lista de resultados */}
           <Box
             width="100%"
             display="flex"
@@ -322,7 +296,6 @@ export const FindFriends = () => {
           </Box>
         </Box>
 
-        {/* Snackbar */}
         <Snackbar
           open={snackbarOpen}
           autoHideDuration={6000}

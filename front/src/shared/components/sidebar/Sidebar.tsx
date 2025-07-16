@@ -60,7 +60,7 @@ export const Sidebar: React.FC<ISidebarProps> = ({ showIcon }) => {
     {
       icon: <SmartToyOutlined sx={iconsStyle} />,
       path: "/ia",
-      label: "Chats",
+      label: "Assistente Virtual",
     },
     {
       icon:
@@ -198,6 +198,7 @@ export const Sidebar: React.FC<ISidebarProps> = ({ showIcon }) => {
           variant="contained"
           disabled={drawerOpen}
           sx={{
+            width: "50px",
             position: "fixed",
             color: "white",
             bottom: 16,
@@ -206,7 +207,7 @@ export const Sidebar: React.FC<ISidebarProps> = ({ showIcon }) => {
           }}
           onClick={() => setDrawerOpen(true)}
         >
-          <Menu />
+          <Menu sx={{ width: 26, height: 26 }} />
         </Button>
       )}
 

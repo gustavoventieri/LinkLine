@@ -1,10 +1,14 @@
 import { Theme } from "@mui/material";
 
-export const getContainerStyle = (smDown: boolean, mdDown: boolean) => ({
+export const getContainerStyle = (
+  smDown: boolean,
+  mdDown: boolean,
+  theme: Theme
+) => ({
   borderRadius: smDown ? 0 : 3,
   overflow: "hidden",
   boxShadow: smDown ? 0 : 10,
-  backgroundColor: mdDown ? "none" : "#1E2125",
+  backgroundColor: mdDown ? "none" : theme.palette.background.paper,
 });
 
 export const getInputStyle = (theme: Theme) => ({
@@ -13,7 +17,7 @@ export const getInputStyle = (theme: Theme) => ({
     fontSize: { xs: "2rem", sm: "2.5rem", md: "2.5rem" },
     padding: 0,
     textAlign: "center" as const,
-    color: theme.palette.text.primary, // exemplo, se quiser cor do texto
+    color: theme.palette.text.primary,
   },
 });
 
@@ -47,11 +51,6 @@ export const getSubtitleStyle = (theme: Theme, mdDown: boolean) => ({
       ? theme.palette.text.primary
       : theme.palette.common.white,
 });
-
-export const getErrorStyle = {
-  mt: -6,
-  mr: 1,
-};
 
 export const getResendLinkStyle = (isDisabled: boolean, theme: Theme) => ({
   color: isDisabled ? "gray" : theme.palette.primary.light,

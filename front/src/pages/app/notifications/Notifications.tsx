@@ -1,25 +1,17 @@
 import { useState, useEffect } from "react";
 import {
   Box,
-  Button,
   CircularProgress,
-  IconButton,
   Typography,
   useMediaQuery,
   Theme,
   useTheme,
 } from "@mui/material";
-import {
-  AccessTimeOutlined,
-  CheckOutlined,
-  CloseOutlined,
-  Diversity3Rounded,
-  SwapHoriz,
-} from "@mui/icons-material";
-import { BaseLayout } from "../../shared/layouts";
-import { useAppThemeContext } from "../../shared/contexts";
-import { api } from "../../shared/services";
-import { RequestCard } from "../../shared/components";
+import { Diversity3Rounded } from "@mui/icons-material";
+import { BaseLayout } from "../../../shared/layouts";
+import { useAppThemeContext } from "../../../shared/contexts";
+import { api } from "../../../shared/services";
+import { RequestCard } from "../../../shared/components";
 
 interface Request {
   id: string;
@@ -29,13 +21,13 @@ interface Request {
   createdAt: string;
   updatedAt: string;
 }
-// ...importações permanecem as mesmas
 
 export const Notifications = () => {
   const { themeName } = useAppThemeContext();
   const mdDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
   const smDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
   const theme = useTheme();
+
   const [statusFilter, setStatusFilter] = useState<
     "declined" | "pending" | "accepted"
   >("pending");
@@ -45,8 +37,6 @@ export const Notifications = () => {
   const [requestLoadingId, setRequestLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSwapTab = () => setTab((prev) => (prev === 0 ? 1 : 0));
-
   const fetchRequests = async () => {
     setLoading(true);
     setError(null);
@@ -55,7 +45,6 @@ export const Notifications = () => {
       const response = await api.get(`/chat-request/${type}/${statusFilter}`);
 
       const requestsObject = response.data.chat_requests || {};
-      console.log(requestsObject);
       const requestsArray: Request[] = Object.values(requestsObject).map(
         (req: any) => ({
           id: req.id,
@@ -69,11 +58,11 @@ export const Notifications = () => {
 
       setRequests(requestsArray);
     } catch (err: any) {
-      if (err.response.status) {
-        setError(" No followers request found ");
+      if (err.response?.status) {
+        setError("Nenhuma solicitação encontrada");
         return;
       }
-      setError("Erro ao buscar solicitações.");
+      setError("Erro ao buscar solicitações");
       setRequests([]);
     } finally {
       setLoading(false);
@@ -90,10 +79,8 @@ export const Notifications = () => {
     newStatus: "ACCEPTED" | "DECLINED"
   ) => {
     setRequestLoadingId(chatRequestId);
-
     try {
       const payload = { newStatus };
-
       const response = await api.put(
         `/chat-request/update/${chatRequestId}`,
         payload
@@ -103,8 +90,7 @@ export const Notifications = () => {
         if (newStatus === "ACCEPTED") {
           await handleCreatePrivateChat(username);
         }
-
-        await fetchRequests(); // sempre faz após atualizar
+        await fetchRequests();
       } else {
         console.warn(
           `Atualização de status falhou. Status HTTP: ${response.status}`
@@ -124,7 +110,7 @@ export const Notifications = () => {
 
   const handleCreatePrivateChat = async (username: string) => {
     try {
-      await api.post("/private-chat/create", { username: username });
+      await api.post("/private-chat/create", { username });
     } catch (error: any) {
       console.error(
         "Erro ao criar chat privado:",
@@ -135,19 +121,19 @@ export const Notifications = () => {
 
   return (
     <BaseLayout showIcon>
-      <Box display="flex" minHeight="100vh">
+      <Box display="flex" height="100vh">
         {!mdDown && (
           <Box
             width="30%"
-            height="100vh" // Garante que o Box ocupe a altura toda
+            height="100vh"
             bgcolor={
               themeName === "light"
                 ? theme.palette.background.paper
                 : theme.palette.background.default
             }
             display="flex"
-            flexDirection="column" // Importante para empilhar os filhos verticalmente
-            p={2} // Adiciona um padding interno para afastar das bordas
+            flexDirection="column"
+            p={2}
           >
             <Box
               display="flex"
@@ -165,9 +151,9 @@ export const Notifications = () => {
                 }}
               />
               <Typography
-                fontSize={16} // Um pouco menor que o título
+                fontSize={16}
                 color={themeName === "dark" ? "grey.300" : "text.secondary"}
-                textAlign="center" // Garante que o texto fique centralizado se quebrar linha
+                textAlign="center"
               >
                 New friendships knocking at the door!
               </Typography>
@@ -184,115 +170,79 @@ export const Notifications = () => {
               ? theme.palette.background.default
               : theme.palette.background.paper
           }
-          p={smDown ? 1 : 2}
         >
           <Box
             display="flex"
             justifyContent="center"
             alignItems="center"
             gap={smDown ? 2 : 10}
-            mb={smDown ? 3 : 5}
             mt={smDown ? 2 : 1}
             flexWrap="wrap"
           >
-            <Typography color="primary.main">Notifications</Typography>
+            <Typography
+              fontSize={25}
+              p={smDown ? 0.5 : 2}
+              fontWeight={600}
+              color="primary.main"
+            >
+              Notifications
+            </Typography>
           </Box>
 
-          <Box
-            flexGrow={1}
-            display="flex"
-            flexDirection="column"
-            // alignItems="center" // Removido para que a lista de cards use a largura total
-          >
+          <Box display="flex" flexDirection="column" flexGrow={1}>
             {loading ? (
               <Box
-                sx={{
-                  textAlign: "center",
-                  mt: 5,
-                  flexGrow: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+                flexGrow={1}
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
               >
                 <CircularProgress />
               </Box>
-            ) : error ? (
-              <Box
-                sx={{
-                  flexGrow: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  mb: mdDown ? 0 : 10,
-                }}
-              >
-                <Typography
-                  color={themeName === "dark" ? "grey.300" : "grey.700"}
-                  textAlign="center"
-                  fontSize={smDown ? 14 : 16}
-                >
-                  {error}
-                </Typography>
-              </Box>
-            ) : requests.length === 0 ? (
-              <Box
-                sx={{
-                  flexGrow: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  mb: 6,
-                  px: 2,
-                }}
-              >
-                <Typography
-                  color={themeName === "dark" ? "grey.400" : "grey.600"}
-                  fontSize={smDown ? 14 : 16}
-                  textAlign="center"
-                >
-                  {tab === 0
-                    ? `You didn't send ${statusFilter} requests.`
-                    : `You didn't receive ${statusFilter} requests.`}
-                </Typography>
-              </Box>
             ) : (
               <Box
-                sx={{
-                  width: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
+                width="100%"
+                mt={-10}
+                display="flex"
+                flexDirection="column"
+                alignItems="center"
+                justifyContent="center"
+                flexGrow={1}
               >
-                {requests.map((req) => (
-                  <RequestCard
-                    avatarUrl={req.receiverUsername}
-                    mdDown={mdDown}
-                    smDown={smDown}
-                    key={req.id}
-                    username={
-                      tab === 0 ? req.receiverUsername : req.senderUsername
-                    }
-                    status={req.status}
-                    onAccept={() =>
-                      handleUpdateChatRequestStatus(
-                        tab === 0 ? req.receiverUsername : req.senderUsername,
-                        req.id,
-                        "ACCEPTED"
-                      )
-                    }
-                    onDecline={() =>
-                      handleUpdateChatRequestStatus(
-                        tab === 0 ? req.receiverUsername : req.senderUsername,
-                        req.id,
-                        "DECLINED"
-                      )
-                    }
-                    type={tab}
-                    loading={requestLoadingId === req.id}
-                  />
-                ))}
+                {error || requests.length === 0 ? (
+                  <Typography color="text.secondary" fontSize={16}>
+                    {error || "Nenhuma solicitação encontrada"}
+                  </Typography>
+                ) : (
+                  requests.map((req) => (
+                    <RequestCard
+                      avatarUrl={req.receiverUsername}
+                      mdDown={mdDown}
+                      smDown={smDown}
+                      key={req.id}
+                      username={
+                        tab === 0 ? req.receiverUsername : req.senderUsername
+                      }
+                      status={req.status}
+                      onAccept={() =>
+                        handleUpdateChatRequestStatus(
+                          tab === 0 ? req.receiverUsername : req.senderUsername,
+                          req.id,
+                          "ACCEPTED"
+                        )
+                      }
+                      onDecline={() =>
+                        handleUpdateChatRequestStatus(
+                          tab === 0 ? req.receiverUsername : req.senderUsername,
+                          req.id,
+                          "DECLINED"
+                        )
+                      }
+                      type={tab}
+                      loading={requestLoadingId === req.id}
+                    />
+                  ))
+                )}
               </Box>
             )}
           </Box>

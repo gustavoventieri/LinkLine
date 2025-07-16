@@ -23,10 +23,11 @@ import {
   ArrowBack,
 } from "@mui/icons-material";
 import SearchIcon from "@mui/icons-material/Search";
-import { BaseLayout } from "../../shared/layouts";
-import { api } from "../../shared/services";
-import { useAppThemeContext } from "../../shared/contexts";
+import { BaseLayout } from "../../../shared/layouts";
+import { api } from "../../../shared/services";
+import { useAppThemeContext } from "../../../shared/contexts";
 import { useNavigate } from "react-router-dom";
+import { getSearchBarStyle } from "./Chats.styles";
 
 type ChatData = {
   chatId: string;
@@ -48,6 +49,10 @@ type Message = {
 export const Chats = () => {
   const { themeName } = useAppThemeContext();
   const theme = useTheme();
+  const mdDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
+  const smDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
+  const navigate = useNavigate();
+
   const [chats, setChats] = useState<ChatData[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -57,9 +62,8 @@ export const Chats = () => {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [showIcon, setShowIcon] = useState<boolean>(true);
-  const mdDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
-  const smDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
-  const navigate = useNavigate();
+
+  const searchBarStyle = getSearchBarStyle(theme);
 
   useEffect(() => {
     const getAllChats = async () => {
@@ -137,7 +141,6 @@ export const Chats = () => {
   return (
     <BaseLayout showIcon={showIcon}>
       <Box display="flex" height="100%" minHeight="100vh">
-        {/* Sidebar */}
         {(!mdDown || !selectedChat) && (
           <Box
             width={mdDown ? "100%" : "30%"}
@@ -146,17 +149,7 @@ export const Chats = () => {
             px={2}
             pt={mdDown ? 2 : 4}
           >
-            <Box
-              sx={{
-                p: "12px 4px",
-                display: "flex",
-                boxShadow: 3,
-                alignItems: "center",
-                mb: mdDown ? 2 : 5,
-                borderRadius: 2,
-                backgroundColor: theme.palette.background.paper,
-              }}
-            >
+            <Box sx={searchBarStyle}>
               <SearchIcon sx={{ ml: 2 }} color="primary" />
               <InputBase
                 sx={{ ml: 2 }}
@@ -212,10 +205,7 @@ export const Chats = () => {
                   >
                     <ListItemAvatar>
                       <Avatar
-                        sx={{
-                          width: smDown ? 50 : 60,
-                          height: smDown ? 50 : 60,
-                        }}
+                        sx={{ ml: mdDown ? 0.5 : 0 }}
                         src={chat.participant.avatarUrl}
                       >
                         <Typography
@@ -249,7 +239,6 @@ export const Chats = () => {
           </Box>
         )}
 
-        {/* Área de mensagens */}
         {(!mdDown || selectedChat) && (
           <Box
             flex={1}
@@ -257,7 +246,6 @@ export const Chats = () => {
             flexDirection="column"
             px={mdDown ? 0 : 2}
           >
-            {/* Header do chat */}
             {selectedChat && (
               <Box
                 sx={{ backgroundColor: theme.palette.background.paper }}

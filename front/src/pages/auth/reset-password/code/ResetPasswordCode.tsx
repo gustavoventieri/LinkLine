@@ -10,15 +10,18 @@ import {
   useMediaQuery,
   Alert,
   CircularProgress,
+  useTheme,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import { useAppThemeContext } from "../../../shared/contexts";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+
+import { useAppThemeContext } from "../../../../shared/contexts";
 import { useNavigate } from "react-router-dom";
-import { api } from "../../../shared/services";
-import { useEmail } from "../../../shared/contexts/EmailContext";
+import { api } from "../../../../shared/services";
+import { useEmail } from "../../../../shared/contexts/EmailContext";
+import { getContainerStyle, getInputStyle } from "./ResetPasswordCode.styles";
 
 const schema = yup.object({
   verificationCode: yup
@@ -26,11 +29,8 @@ const schema = yup.object({
     .required("Code is required")
     .length(6, "Code must be 6 digits"),
 });
+
 type FormData = yup.InferType<typeof schema>;
-
-// ... (imports e schema continuam os mesmos)
-
-// ... (imports e schema continuam os mesmos)
 
 export const ResetPasswordCode = () => {
   const smDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
@@ -38,6 +38,7 @@ export const ResetPasswordCode = () => {
   const navigate = useNavigate();
   const { email } = useEmail();
   const { themeName } = useAppThemeContext();
+  const theme = useTheme();
 
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
@@ -46,6 +47,8 @@ export const ResetPasswordCode = () => {
   const [isResendDisabled, setIsResendDisabled] = useState(false);
   const [resendTimer, setResendTimer] = useState(30);
 
+  const containerStyle = getContainerStyle(smDown, mdDown, theme);
+  const inputStyle = getInputStyle();
   const {
     register,
     handleSubmit,
@@ -169,13 +172,7 @@ export const ResetPasswordCode = () => {
           boxShadow={3}
           width="80%"
           height={"50vh"}
-          sx={{
-            borderRadius: mdDown ? 0 : 5,
-            overflowY: "auto",
-            boxShadow: mdDown ? 0 : 10,
-
-            backgroundColor: mdDown ? "none" : "#1E2125",
-          }}
+          sx={containerStyle}
         >
           <form onSubmit={handleSubmit(onSubmit)} style={{ width: "100%" }}>
             <input type="hidden" {...register("verificationCode")} />
@@ -226,21 +223,7 @@ export const ResetPasswordCode = () => {
                         pattern: "[0-9]*",
                         style: { textAlign: "center" },
                       }}
-                      sx={{
-                        width: {
-                          xs: "2.5rem",
-                          sm: "3.0rem",
-                          md: "3.0rem",
-                        },
-                        "& input": {
-                          fontSize: {
-                            xs: "2rem",
-                            sm: "2.5rem",
-                            md: "2.5rem",
-                          },
-                          padding: 0,
-                        },
-                      }}
+                      sx={inputStyle}
                       value={code[index] || ""}
                       onChange={(e) => handleInputChange(index, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(e, index)}
@@ -275,7 +258,10 @@ export const ResetPasswordCode = () => {
                     onClick={onResendCode}
                     color="primary"
                     underline="hover"
-                    sx={{ color: isResendDisabled ? "gray" : "primary.light", mt: -0.3 }}
+                    sx={{
+                      color: isResendDisabled ? "gray" : "primary.light",
+                      mt: -0.3,
+                    }}
                     disabled={isResendDisabled}
                   >
                     Resend code
