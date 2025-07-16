@@ -8,7 +8,6 @@ import {
   Grid,
   Button,
   Box,
-  Paper,
   TextField,
   Typography,
   InputAdornment,
@@ -19,14 +18,24 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
+  useTheme,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useAppThemeContext } from "../../shared/contexts";
-import { api } from "../../shared/services";
 import { useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+
+import {
+  buttonStyle,
+  getFormStyle,
+  getIconStyle,
+  getInputStyle,
+  getLinkStyle,
+  getTitleStyle,
+} from "./Login.styles";
+import { useAppThemeContext } from "../../../shared/contexts";
+import { api } from "../../../shared/services";
 
 const loginSchema = yup.object().shape({
   email: yup
@@ -53,6 +62,13 @@ export const Login = () => {
 
   const { themeName } = useAppThemeContext();
   const navigate = useNavigate();
+  const theme = useTheme();
+
+  const inputStyle = getInputStyle(theme, themeName);
+  const iconsStyles = getIconStyle(theme);
+  const linkStyle = getLinkStyle(theme);
+  const titleStyle = getTitleStyle(theme, themeName, mdDown);
+  const formStyle = getFormStyle(smDown);
 
   const {
     handleSubmit,
@@ -87,14 +103,7 @@ export const Login = () => {
   const handleLogin = async (data: LoginFormData) => {
     try {
       setIsLoading(true);
-
-      const loginPayload = {
-        email: data.email,
-        password: data.password,
-      };
-
-      const loginResponse = await api.post("/auth/login", loginPayload);
-
+      const loginResponse = await api.post("/auth/login", data);
       if (loginResponse.status === 200) navigate("/chats");
     } catch (error) {
       console.error("Erro ao fazer login:", error);
@@ -105,13 +114,7 @@ export const Login = () => {
   };
 
   return (
-    <Grid
-      container
-      justifyContent="center"
-      alignItems="center"
-      height="100vh"
-      width="100%"
-    >
+    <Grid container justifyContent="center" alignItems="center" height="100vh">
       <Grid
         size={{ xs: 12, sm: 12, md: 8, lg: 10 }}
         display="flex"
@@ -119,20 +122,20 @@ export const Login = () => {
         alignItems="start"
         borderRadius={10}
       >
-        <Paper
-          component={Box}
+        <Box
           display="flex"
           flexDirection="row"
           alignItems="center"
           justifyContent="flex-start"
-          boxShadow={3}
           width="100%"
           height={mdDown ? "100vh" : "88vh"}
           sx={{
             borderRadius: mdDown ? 0 : 5,
             overflow: "hidden",
             boxShadow: mdDown ? 0 : 10,
-            backgroundColor: mdDown ? "transparent" : "primary.paper",
+            backgroundColor: mdDown
+              ? "transparent"
+              : theme.palette.background.paper,
             padding: 4,
             gap: 5,
           }}
@@ -145,22 +148,11 @@ export const Login = () => {
             justifyContent="center"
           >
             <Box
-              width="100%"
-              display="flex"
-              flexDirection="column"
-              gap={smDown ? 6 : 8}
-              paddingX={smDown ? 2 : 5}
               component="form"
               onSubmit={handleSubmit(handleLogin)}
+              sx={formStyle}
             >
-              <Typography
-                fontSize={mdDown ? 28 : 32}
-                fontWeight={900}
-                align="center"
-                color={themeName === "light" ? "primary.main" : "white"}
-              >
-                Access Your Account
-              </Typography>
+              <Typography sx={titleStyle}>Access Your Account</Typography>
 
               <Controller
                 name="email"
@@ -177,21 +169,11 @@ export const Login = () => {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start" sx={{ ml: 1 }}>
-                          <MailOutline
-                            color="primary"
-                            sx={{ width: 25, height: 25 }}
-                          />
+                          <MailOutline sx={iconsStyles} />
                         </InputAdornment>
                       ),
                     }}
-                    sx={{
-                      mb: 2,
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: 3,
-                        height: 55,
-                        "& fieldset": { borderColor: "primary.main" },
-                      },
-                    }}
+                    sx={inputStyle}
                   />
                 )}
               />
@@ -212,63 +194,39 @@ export const Login = () => {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start" sx={{ ml: 1 }}>
-                          <LockPersonOutlined
-                            color="primary"
-                            sx={{ width: 25, height: 25 }}
-                          />
+                          <LockPersonOutlined sx={iconsStyles} />
                         </InputAdornment>
                       ),
                       endAdornment: (
                         <InputAdornment position="end" sx={{ mr: 1 }}>
                           <IconButton onClick={toggleShowPassword} edge="end">
                             {showPassword === "" ? (
-                              <VisibilityOffOutlined
-                                sx={{
-                                  color: "primary.main",
-                                  width: 30,
-                                  height: 30,
-                                }}
-                              />
+                              <VisibilityOffOutlined sx={iconsStyles} />
                             ) : (
-                              <VisibilityOutlined
-                                sx={{
-                                  color: "primary.main",
-                                  width: 30,
-                                  height: 30,
-                                }}
-                              />
+                              <VisibilityOutlined sx={iconsStyles} />
                             )}
                           </IconButton>
                         </InputAdornment>
                       ),
                     }}
-                    sx={{
-                      mt: -5,
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: 3,
-                        height: 55,
-                        "& fieldset": { borderColor: "primary.main" },
-                      },
-                    }}
+                    sx={inputStyle}
                   />
                 )}
               />
 
               <Typography
                 fontSize={smDown ? 12 : 14}
-                fontWeight={500}
                 align="left"
                 ml={0.5}
-                mt={smDown ? -4 : -6}
-                mb={smDown ? -4 : -6}
+                color={theme.palette.text.primary}
               >
                 Forgot your password?{" "}
                 <Link
-                  component="button"
                   type="button"
                   onClick={redirectToResetPassword}
                   underline="hover"
-                  sx={{ color: "primary.light" }}
+                  fontWeight={700}
+                  sx={linkStyle}
                 >
                   Reset Password
                 </Link>
@@ -277,36 +235,29 @@ export const Login = () => {
               <Button
                 type="submit"
                 variant="contained"
-                color="primary"
                 fullWidth
                 disabled={isLoading}
-                sx={{
-                  marginTop: 0,
-                  borderRadius: 2,
-                  paddingY: 1.4,
-                  marginBottom: smDown ? -4 : -5,
-                }}
+                sx={buttonStyle}
               >
                 {isLoading ? (
                   <CircularProgress size={24} color="inherit" />
                 ) : (
-                  <Typography fontSize={12} fontWeight={500}>
-                    Access
-                  </Typography>
+                  "Access"
                 )}
               </Button>
 
               <Typography
                 fontSize={smDown ? 12 : 14}
-                fontWeight={500}
                 align="left"
                 ml={0.5}
+                color={theme.palette.text.primary}
               >
                 Don’t have an account?{" "}
                 <Link
                   href="/register"
                   underline="hover"
-                  sx={{ color: "primary.light" }}
+                  sx={linkStyle}
+                  fontWeight={700}
                 >
                   Sign Up
                 </Link>
@@ -324,17 +275,20 @@ export const Login = () => {
               mr={5}
             >
               <Typography
-                color={themeName === "light" ? "primary.main" : "white"}
                 sx={{
                   fontFamily: '"Irish Grover", cursive',
                   fontSize: xxlUp ? 150 : 110,
+                  color:
+                    themeName === "light"
+                      ? theme.palette.primary.main
+                      : "white",
                 }}
               >
                 Link Line
               </Typography>
             </Box>
           )}
-        </Paper>
+        </Box>
       </Grid>
 
       <Snackbar

@@ -186,7 +186,6 @@ export const Notifications = () => {
           }
           p={smDown ? 1 : 2}
         >
-          {/* Botões de aba superior */}
           <Box
             display="flex"
             justifyContent="center"
@@ -196,42 +195,7 @@ export const Notifications = () => {
             mt={smDown ? 2 : 1}
             flexWrap="wrap"
           >
-            <Button
-              variant={tab === 0 ? "contained" : "text"}
-              onClick={() => setTab(0)}
-              disableElevation
-              sx={{
-                textTransform: "none",
-                fontSize: smDown ? 14 : 18,
-                px: smDown ? 4 : 6,
-                py: smDown ? 0.5 : 1,
-                borderRadius: 2,
-              }}
-            >
-              Sent
-            </Button>
-
-            <IconButton onClick={handleSwapTab}>
-              <SwapHoriz
-                sx={{ fontSize: smDown ? 24 : 35, color: "primary.main" }}
-              />
-            </IconButton>
-
-            <Button
-              variant={tab === 1 ? "contained" : "text"}
-              onClick={() => setTab(1)}
-              disableElevation
-              sx={{
-                textTransform: "none",
-                fontSize: smDown ? 14 : 18,
-                borderRadius: 2,
-                px: smDown ? 2 : 6,
-                py: smDown ? 0.5 : 1,
-                ml: smDown ? 0.5 : 0,
-              }}
-            >
-              Received
-            </Button>
+            <Typography color="primary.main">Notifications</Typography>
           </Box>
 
           <Box
@@ -331,72 +295,6 @@ export const Notifications = () => {
                 ))}
               </Box>
             )}
-          </Box>
-
-          <Box
-            display="flex"
-            justifyContent={mdDown ? "flex-start" : "center"}
-            alignItems={mdDown ? "flex-start" : "center"}
-            flexDirection={mdDown ? "column" : "row"}
-            flexWrap="wrap"
-            gap={mdDown ? 1 : 2}
-            mt="auto"
-          >
-            {["declined", "pending", "accepted"].map((status) => {
-              const label = status[0].toUpperCase() + status.slice(1);
-              const color =
-                status === "declined"
-                  ? "#E60000"
-                  : status === "pending"
-                  ? "#FFD52F"
-                  : "#15FF00";
-              const bg =
-                status === "declined"
-                  ? "rgba(255, 0, 0, 0.2)"
-                  : status === "pending"
-                  ? "rgba(248, 234, 37, 0.2)"
-                  : "rgba(132, 248, 37, 0.2)";
-
-              const Icon =
-                status === "declined"
-                  ? CloseOutlined
-                  : status === "pending"
-                  ? AccessTimeOutlined
-                  : CheckOutlined;
-
-              return (
-                <Button
-                  key={status}
-                  onClick={() => setStatusFilter(status as Request["status"])}
-                  variant={statusFilter === status ? "contained" : "outlined"}
-                  startIcon={
-                    <Icon
-                      sx={{
-                        color,
-                        width: mdDown ? 20 : 30,
-                        height: mdDown ? 20 : 30,
-                      }}
-                    />
-                  }
-                  sx={{
-                    bgcolor: statusFilter === status ? bg : "transparent",
-                    color,
-                    border: `${bg} 2px solid`,
-                    textTransform: "none",
-                    fontSize: mdDown ? 10 : 16,
-                    px: mdDown ? 2 : 5,
-                    py: mdDown ? 0.5 : 0.7,
-                    "&:hover": {
-                      bgcolor: bg,
-                    },
-                    borderRadius: 2,
-                    width: mdDown ? "50%" : "auto", // Para preencher a largura no mobile
-                  }}
-                >
-                  {label}
-                </Button>
-              );
-            })}
           </Box>
         </Box>
       </Box>

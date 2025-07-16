@@ -138,7 +138,7 @@ export const ResetPasswordCode = () => {
 
     setIsResendDisabled(true);
     try {
-      await api.post("/auth/resend-password-code", { email });
+      await api.post("/auth/reset-password/resend", { email: email });
     } catch (error) {
       console.error("Erro ao reenviar o código:", error);
     }
@@ -273,10 +273,9 @@ export const ResetPasswordCode = () => {
                     component="button"
                     fontWeight={500}
                     onClick={onResendCode}
-                    type="button"
                     color="primary"
                     underline="hover"
-                    sx={{ color: isResendDisabled ? "gray" : "primary.light" }}
+                    sx={{ color: isResendDisabled ? "gray" : "primary.light", mt: -0.3 }}
                     disabled={isResendDisabled}
                   >
                     Resend code
@@ -284,7 +283,7 @@ export const ResetPasswordCode = () => {
                   {isResendDisabled && (
                     <Typography
                       component="span"
-                      fontSize={14}
+                      fontSize={16}
                       fontWeight={400}
                       color="error"
                       ml={1}

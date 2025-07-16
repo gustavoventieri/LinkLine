@@ -1,5 +1,5 @@
-export * from "./auth/Login";
-export * from "./auth/Register";
+export * from "./auth/login/Login";
+export * from "./auth/register/Register";
 export * from "./auth/email-verification/EmailVerification";
 export * from "./auth/reset-password/ResetPasswordEmail";
 export * from "./auth/reset-password/ResetPasswordCode";

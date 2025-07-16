@@ -311,9 +311,17 @@ export const Chats = () => {
                   <CircularProgress size={30} />
                 </Box>
               ) : !selectedChat ? (
-                <Typography align="center" color="textSecondary" mt={4}>
-                  Selecione um chat para começar a conversar
-                </Typography>
+                <Box
+                  flex={1}
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                  height="100%"
+                >
+                  <Typography color="textSecondary" mt={4}>
+                    Selecione um chat para começar a conversar
+                  </Typography>
+                </Box>
               ) : (
                 messages.map((msg) => (
                   <Box

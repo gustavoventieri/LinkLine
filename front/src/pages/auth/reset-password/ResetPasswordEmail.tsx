@@ -10,6 +10,7 @@ import {
   Alert,
   CircularProgress,
   InputAdornment,
+  useTheme,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { useAppThemeContext } from "../../../shared/contexts";
@@ -29,10 +30,12 @@ const schema = yup.object({
 export const ResetPasswordEmail = () => {
   const smDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
   const mdDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
+
   const navigate = useNavigate();
   const { setEmail } = useEmail();
   const { themeName } = useAppThemeContext();
   const emailRef = useRef<HTMLInputElement>(null);
+  const theme = useTheme();
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -123,7 +126,7 @@ export const ResetPasswordEmail = () => {
             overflowY: "auto",
             boxShadow: mdDown ? 0 : 10,
             px: 2,
-            backgroundColor: mdDown ? "none" : "#1E2125",
+            backgroundColor: mdDown ? "none" : theme.palette.background.paper,
           }}
         >
           <form onSubmit={handleSubmit(onSubmit)} style={{ width: "100%" }}>

@@ -1,16 +1,17 @@
+// EmailVerification.tsx
 import {
   Box,
   Button,
   Grid,
   Link,
-  Paper,
   Snackbar,
   TextField,
-  Theme,
   Typography,
   useMediaQuery,
   Alert,
   CircularProgress,
+  useTheme,
+  Theme,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { useAppThemeContext } from "../../../shared/contexts";
@@ -21,7 +22,17 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../../../shared/services";
 import { useEmail } from "../../../shared/contexts/EmailContext";
 
-// Schema de validação
+import {
+  getContainerStyle,
+  getInputStyle,
+  getButtonStyle,
+  getTitleStyle,
+  getSubtitleStyle,
+  getErrorStyle,
+  getResendLinkStyle,
+  getSnackbarStyle,
+} from "./EmailVerification.styles";
+
 const schema = yup.object({
   verificationCode: yup
     .string()
@@ -30,18 +41,30 @@ const schema = yup.object({
 });
 
 export const EmailVerification = () => {
-  const smDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
-  const mdDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
-
+  const theme = useTheme();
+  // Removi themeName que não está mais sendo usado no styles
   const navigate = useNavigate();
   const { email } = useEmail();
-  const { themeName } = useAppThemeContext();
+
+  const smDown = useMediaQuery((t: Theme) => t.breakpoints.down("sm"));
+  const mdDown = useMediaQuery((t: Theme) => t.breakpoints.down("md"));
+
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
-  const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [isResendDisabled, setIsResendDisabled] = useState(false);
   const [resendTimer, setResendTimer] = useState(30);
+  const [isLoading, setIsLoading] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+
+  // Passa o theme para os estilos que precisam, e as flags de breakpoint
+  const containerStyle = getContainerStyle(smDown, mdDown);
+  const inputStyle = getInputStyle(theme);
+  const buttonStyle = getButtonStyle(theme);
+  const titleStyle = getTitleStyle(theme, mdDown);
+  const subtitleStyle = getSubtitleStyle(theme, mdDown);
+  const errorStyle = getErrorStyle;
+  const resendLinkStyle = getResendLinkStyle(isResendDisabled, theme);
+  const snackbarStyle = getSnackbarStyle;
 
   const {
     register,
@@ -49,115 +72,83 @@ export const EmailVerification = () => {
     clearErrors,
     setValue,
     formState: { errors },
-  } = useForm({
+  } = useForm<{ verificationCode: string }>({
     resolver: yupResolver(schema),
-    mode: "onChange", // validar enquanto digita, opcional
+    mode: "onChange",
   });
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        await api.get("/auth/isAuth");
-        navigate("/chats", { replace: true });
-      } catch {}
-    };
-
-    checkAuth();
-  }, []);
+    api
+      .get("/auth/isAuth")
+      .then(() => navigate("/chats", { replace: true }))
+      .catch(() => {});
+  }, [navigate]);
 
   useEffect(() => {
-    let timer: any;
-    if (isResendDisabled && resendTimer > 0) {
-      timer = setTimeout(() => {
-        setResendTimer((prev) => prev - 1);
-      }, 1000);
-    } else if (resendTimer === 0) {
+    if (!isResendDisabled) return;
+    if (resendTimer === 0) {
       setIsResendDisabled(false);
       setResendTimer(30);
+      return;
     }
-    return () => clearTimeout(timer);
+    const id = setTimeout(() => setResendTimer((r) => r - 1), 1000);
+    return () => clearTimeout(id);
   }, [isResendDisabled, resendTimer]);
 
-  const handleInputChange = (index: number, value: string) => {
-    if (!/^\d?$/.test(value)) return;
-
+  const handleInputChange = (i: number, v: string) => {
+    if (!/^\d?$/.test(v)) return;
     const newCode = [...code];
-    newCode[index] = value;
+    newCode[i] = v;
     setCode(newCode);
-
-    // Sincroniza valor do código com react-hook-form
     setValue("verificationCode", newCode.join(""));
-
     clearErrors("verificationCode");
-
-    if (value && index < 5) {
-      inputsRef.current[index + 1]?.focus();
-    }
+    if (v && i < 5) inputsRef.current[i + 1]?.focus();
   };
-
-  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
-    if (e.key === "Backspace" && !code[index] && index > 0) {
+  const handleKeyDown = (e: React.KeyboardEvent, i: number) => {
+    if (e.key === "Backspace" && !code[i] && i > 0) {
       const newCode = [...code];
-      newCode[index - 1] = "";
+      newCode[i - 1] = "";
       setCode(newCode);
-
-      // Atualiza form com novo código
       setValue("verificationCode", newCode.join(""));
-
-      inputsRef.current[index - 1]?.focus();
+      inputsRef.current[i - 1]?.focus();
     }
   };
 
   const onSubmit = async (data: { verificationCode: string }) => {
-    const fullCode = data.verificationCode;
-
-    const sessionToken = localStorage.getItem("authSession");
-    if (!sessionToken) {
-      console.warn("Nenhum token de sessão encontrado.");
-      return;
-    }
-
+    const token = localStorage.getItem("authSession");
+    if (!token) return console.warn("No session token");
     setIsLoading(true);
     try {
-      const verifyEmailPayload = { email, code: fullCode };
-
-      const verifyEmailResponse = await api.post(
-        "/auth/email-confirmation/verify",
-        verifyEmailPayload
-      );
-
-      if (verifyEmailResponse.status === 200) {
-        const registerUserResponse = await api.post("/auth/register", {
+      const { status } = await api.post("/auth/email-confirmation/verify", {
+        email,
+        code: data.verificationCode,
+      });
+      if (status === 200) {
+        const reg = await api.post("/auth/register", {
           email,
-          code: fullCode,
-          avatarUrl: "asdfghjkgfds",
+          code: data.verificationCode,
+          avatarUrl: "...",
         });
-
-        if (registerUserResponse.status === 200) {
+        if (reg.status === 200) {
           localStorage.removeItem("authSession");
           navigate("/chats", { replace: true });
         }
       }
-    } catch (error) {
-      console.error("Erro ao verificar o código:", error);
+    } catch {
       setSnackbarOpen(true);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const onResendCode = async () => {
-    const sessionToken = localStorage.getItem("authSession");
-    if (!sessionToken) {
-      console.warn("Nenhum token de sessão encontrado.");
-      return;
-    }
-
+  const onResend = async () => {
+    const token = localStorage.getItem("authSession");
+    if (!token) return console.warn("No session token");
     setIsResendDisabled(true);
     try {
       await api.post("/auth/email-confirmation/resend", { email });
-    } catch (error) {
-      console.error("Erro ao reenviar o código:", error);
+    } catch {
+      /*ignore*/
     }
   };
 
@@ -182,18 +173,11 @@ export const EmailVerification = () => {
           flexDirection="column"
           alignItems="center"
           justifyContent="center"
-          boxShadow={3}
           width="80%"
-          height={"50vh"}
-          sx={{
-            borderRadius: smDown ? 0 : 3,
-            overflow: "hidden",
-            boxShadow: smDown ? 0 : 10,
-            backgroundColor: mdDown ? "none" : "#1E2125",
-          }}
+          height="50vh"
+          sx={containerStyle}
         >
           <form onSubmit={handleSubmit(onSubmit)} style={{ width: "100%" }}>
-            {/* input escondido para react-hook-form */}
             <input type="hidden" {...register("verificationCode")} />
 
             <Box
@@ -209,73 +193,37 @@ export const EmailVerification = () => {
                 flexDirection="column"
                 gap={8}
               >
-                <Typography
-                  fontSize={mdDown ? 24 : 28}
-                  fontWeight={900}
-                  mb={-5}
-                  align="center"
-                  color={themeName === "light" ? "primary.main" : "white"}
-                >
-                  Verifying Your Email
-                </Typography>
-
-                <Typography
-                  fontSize={mdDown ? 12 : 16}
-                  mb={-5}
-                  fontWeight={400}
-                  align="center"
-                  color={themeName === "light" ? "black" : "white"}
-                >
+                <Typography sx={titleStyle}>Verifying Your Email</Typography>
+                <Typography sx={subtitleStyle}>
                   Check your email — we’ve sent you a code to verify your email!
                 </Typography>
 
                 <Box display="flex" justifyContent="center" gap={1}>
-                  {[0, 1, 2, 3, 4, 5].map((index) => (
+                  {code.map((c, i) => (
                     <TextField
-                      key={index}
-                      inputRef={(el) => (inputsRef.current[index] = el)}
+                      key={i}
+                      inputRef={(el) => (inputsRef.current[i] = el)}
                       inputProps={{
                         maxLength: 1,
                         inputMode: "numeric",
                         pattern: "[0-9]*",
-                        style: { textAlign: "center" },
                       }}
-                      sx={{
-                        width: {
-                          xs: "2.5rem",
-                          sm: "3.0rem",
-                          md: "3.0rem",
-                        },
-                        "& input": {
-                          fontSize: {
-                            xs: "2rem",
-                            sm: "2.5rem",
-                            md: "2.5rem",
-                          },
-                          padding: 0,
-                        },
-                      }}
-                      value={code[index] || ""}
-                      onChange={(e) => handleInputChange(index, e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(e, index)}
+                      sx={inputStyle}
+                      value={c}
+                      onChange={(e) => handleInputChange(i, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(e, i)}
                       error={!!errors.verificationCode}
+                      helperText={errors.verificationCode?.message}
+                      size="small" // opcional para deixar menor
+                      variant="outlined"
                     />
                   ))}
                 </Box>
 
-                {errors.verificationCode && (
-                  <Typography
-                    variant="caption"
-                    color="error"
-                    align="center"
-                    sx={{ mt: -6, mr: 1 }}
-                  >
-                    {errors.verificationCode.message}
-                  </Typography>
-                )}
+                {/* Erro já mostrado no helperText acima, pode remover esse Typography */}
 
                 <Typography
-                  fontSize={11}
+                  fontSize={16}
                   fontWeight={500}
                   align="left"
                   ml={0.5}
@@ -285,12 +233,10 @@ export const EmailVerification = () => {
                   Didn’t receive yet?{" "}
                   <Link
                     component="button"
-                    fontWeight={500}
-                    onClick={onResendCode}
-                    type="button"
+                    onClick={onResend}
                     underline="hover"
-                    sx={{ color: isResendDisabled ? "gray" : "primary.light" }}
                     disabled={isResendDisabled}
+                    sx={resendLinkStyle}
                   >
                     Resend code
                   </Link>
@@ -311,23 +257,13 @@ export const EmailVerification = () => {
                   fullWidth
                   type="submit"
                   variant="contained"
-                  color="primary"
-                  sx={{
-                    marginTop: -4,
-                    borderRadius: 3,
-                    paddingY: 1.4,
-                    "&:hover": {
-                      backgroundColor: "primary.dark",
-                    },
-                  }}
-                  disabled={isLoading || code.some((c) => c === "")}
+                  sx={buttonStyle}
+                  disabled={isLoading || code.some((x) => !x)}
                 >
                   {isLoading ? (
-                    <CircularProgress size={26} sx={{ color: "white" }} />
+                    <CircularProgress size={26} color="inherit" />
                   ) : (
-                    <Typography fontSize={12} fontWeight={900}>
-                      Verify
-                    </Typography>
+                    "Verify"
                   )}
                 </Button>
               </Box>
@@ -346,7 +282,7 @@ export const EmailVerification = () => {
           onClose={() => setSnackbarOpen(false)}
           severity="error"
           variant="filled"
-          sx={{ width: "100%", color: "white", backgroundColor: "red" }}
+          sx={snackbarStyle}
         >
           Expired or Invalid Code. Please try again.
         </Alert>
