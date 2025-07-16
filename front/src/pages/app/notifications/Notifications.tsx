@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 import { Diversity3Rounded } from "@mui/icons-material";
 import { BaseLayout } from "../../../shared/layouts";
-import { useAppThemeContext } from "../../../shared/contexts";
 import { api } from "../../../shared/services";
 import { RequestCard } from "../../../shared/components";
 
@@ -23,7 +22,6 @@ interface Request {
 }
 
 export const Notifications = () => {
-  const { themeName } = useAppThemeContext();
   const mdDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
   const smDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
   const theme = useTheme();
@@ -127,7 +125,7 @@ export const Notifications = () => {
             width="30%"
             height="100vh"
             bgcolor={
-              themeName === "light"
+              theme.palette.mode === "light"
                 ? theme.palette.background.paper
                 : theme.palette.background.default
             }
@@ -147,12 +145,16 @@ export const Notifications = () => {
                 sx={{
                   width: 100,
                   height: 100,
-                  color: themeName === "dark" ? "white" : "grey.400",
+                  color: theme.palette.mode === "dark" ? "white" : "grey.400",
                 }}
               />
               <Typography
                 fontSize={16}
-                color={themeName === "dark" ? "grey.300" : "text.secondary"}
+                color={
+                  theme.palette.mode === "dark"
+                    ? "grey.300"
+                    : theme.palette.text.secondary
+                }
                 textAlign="center"
               >
                 New friendships knocking at the door!
@@ -166,7 +168,7 @@ export const Notifications = () => {
           display="flex"
           flexDirection="column"
           bgcolor={
-            themeName === "light"
+            theme.palette.mode === "light"
               ? theme.palette.background.default
               : theme.palette.background.paper
           }
@@ -183,7 +185,7 @@ export const Notifications = () => {
               fontSize={25}
               p={smDown ? 0.5 : 2}
               fontWeight={600}
-              color="primary.main"
+              color={theme.palette.primary.main}
             >
               Notifications
             </Typography>
