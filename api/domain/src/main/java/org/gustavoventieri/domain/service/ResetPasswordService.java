@@ -2,12 +2,9 @@ package org.gustavoventieri.domain.service;
 
 public interface ResetPasswordService {
 
+    void initiateResetPassword(String email);
 
-    String sendResetPasswordCode(String email);
+    void resendResetPasswordCode(String email);
 
-    String resendResetPasswordCode(String email);
-
-    void verifyResetPasswordCode(String email, String code);
-
-    void updateUserPasswordByEmail(String email, String password);
+    void validateResetPasswordCode(String email, String code);
 }
