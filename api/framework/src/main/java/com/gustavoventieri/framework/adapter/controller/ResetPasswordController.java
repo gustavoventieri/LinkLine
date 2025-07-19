@@ -16,11 +16,10 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
 /**
- * Controller responsável pelo fluxo de redefinição de senha,
- * incluindo envio, reenvio, verificação de código e atualização de senha.
+ * Controller responsible for the password reset flow,
+ * including sending, resending, verifying code, and updating password.
  * 
- * Expondo endpoints para gerenciamento completo do processo de reset de senha
- * por e-mail.
+ * Exposes endpoints to fully manage the email-based password reset process.
  */
 @RestController
 @RequestMapping("/api/v1/auth/reset-password")
@@ -31,11 +30,11 @@ public class ResetPasswordController {
     private final ResetPasswordService resetPasswordService;
 
     /**
-     * Envia um código para redefinição de senha para o e-mail informado.
-     * 
-     * @param request Objeto contendo o e-mail para o qual o código será enviado.
-     * @return ResponseEntity com status 200 OK e mensagem confirmando o envio do
-     *         código.
+     * Sends a password reset code to the provided email address.
+     *
+     * @param request Object containing the email to which the code will be sent.
+     * @return ResponseEntity with 200 OK and a message confirming the code was
+     *         sent.
      */
     @PostMapping("/send")
     public ResponseEntity<String> sendResetPasswordCode(@RequestBody @Valid SendResetPasswordCodeRequestImpl request) {
@@ -44,12 +43,12 @@ public class ResetPasswordController {
     }
 
     /**
-     * Reenvia o código de redefinição de senha para o e-mail informado,
-     * útil caso o usuário não tenha recebido o código anterior.
-     * 
-     * @param request Objeto contendo o e-mail para o qual o código será reenviado.
-     * @return ResponseEntity com status 200 OK e mensagem confirmando o reenvio do
-     *         código.
+     * Resends the password reset code to the provided email,
+     * useful in case the user did not receive the previous one.
+     *
+     * @param request Object containing the email to which the code will be resent.
+     * @return ResponseEntity with 200 OK and a message confirming the code was
+     *         resent.
      */
     @PostMapping("/resend")
     public ResponseEntity<String> resendResetPasswordCode(
@@ -59,12 +58,11 @@ public class ResetPasswordController {
     }
 
     /**
-     * Verifica se o código de redefinição de senha fornecido é válido para o e-mail
-     * informado.
-     * 
-     * @param request Objeto contendo o e-mail e o código a ser verificado.
-     * @return ResponseEntity com status 200 OK e mensagem confirmando a validade do
-     *         código.
+     * Verifies if the provided password reset code is valid for the given email.
+     *
+     * @param request Object containing the email and the code to verify.
+     * @return ResponseEntity with 200 OK and a message confirming the code is
+     *         valid.
      */
     @PostMapping("/verify")
     public ResponseEntity<String> verifyResetPasswordCode(
@@ -72,5 +70,4 @@ public class ResetPasswordController {
         resetPasswordService.validateResetPasswordCode(request.email(), request.code());
         return ResponseEntity.status(HttpStatus.OK).body("Reset password code is valid");
     }
-
 }

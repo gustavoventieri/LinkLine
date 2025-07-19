@@ -16,6 +16,9 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Controller responsible for user-related actions, such as updating password.
+ */
 @RestController
 @RequestMapping("/api/v1/user")
 @AllArgsConstructor
@@ -23,14 +26,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Validated
 public class UserController {
+
         private final UserRepository userRepository;
+
         /**
-         * Atualiza a senha do usuário associada ao e-mail informado.
-         * Normalmente é chamado após a validação do código de redefinição.
-         * 
-         * @param request Objeto contendo o e-mail do usuário e a nova senha.
-         * @return ResponseEntity com status 200 OK e mensagem confirmando a atualização
-         *         da senha.
+         * Updates the password for the user associated with the provided email.
+         * Typically called after a successful password reset code validation.
+         *
+         * @param request Object containing the user's email and the new password.
+         * @return ResponseEntity with status 200 OK and a message confirming the
+         *         password update.
          */
         @PutMapping("/update")
         public ResponseEntity<String> updatePassword(@RequestBody @Valid ResetPasswordRequestImpl request) {

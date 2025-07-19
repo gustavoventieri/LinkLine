@@ -25,19 +25,14 @@ public class Friendship {
     private UUID id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    @JsonBackReference(value = "user-friendships")
-    private User user;
+    @JoinColumn(name = "sender_id", nullable = false)
+    @JsonBackReference(value = "sender-friendships")
+    private User sender;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "friend_id", nullable = false)
-    @JsonBackReference(value = "friend-friendships")
-    private User friend;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "requested_by", nullable = false)
-    @JsonBackReference(value = "requested-by-friendships")
-    private User requestedBy;
+    @JoinColumn(name = "receiver_id", nullable = false)
+    @JsonBackReference(value = "receiver-friendships")
+    private User receiver;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

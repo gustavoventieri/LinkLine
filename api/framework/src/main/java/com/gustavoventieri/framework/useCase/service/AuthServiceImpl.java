@@ -30,9 +30,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Implementação do serviço de autenticação responsável pelo login e
- * registro de usuários, incluindo validação de credenciais, verificação de
- * código de email e envio de mensagens de confirmação.
+ * Implementation of the authentication service responsible for user login and
+ * registration,
+ * including credential validation, email code verification, and sending
+ * confirmation messages.
  */
 @Service
 @RequiredArgsConstructor
@@ -93,7 +94,6 @@ public class AuthServiceImpl implements AuthService {
                 new HashSet<>(),
                 new HashSet<>(),
                 new HashSet<>(),
-                new HashSet<>(),
                 new HashSet<>());
 
         final UserDomain savedUser = userRepository.save(UserMapper.toDomainComplete(user));
@@ -107,7 +107,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public Map<String, Object> isAuth(final UUID userId) {
-        userRepository.findById(userId)
+        UserDomain user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("User not found or not authenticated. userId: {}", userId);
                     return new Unauthorized("User not authenticated");
@@ -115,7 +115,7 @@ public class AuthServiceImpl implements AuthService {
 
         final Map<String, Object> response = new HashMap<>();
         response.put("message", "User is authenticated");
-        response.put("userId", userId);
+        response.put("username", user.username());
 
         return response;
     }

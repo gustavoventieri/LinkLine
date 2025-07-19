@@ -30,33 +30,27 @@ public class UserServiceImpl implements UserService {
     private final ResetPasswordRepository resetPasswordRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
-
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<PotentialFriendResponse> findUsersByUsername(String searchTerm, UUID currentUserId, int searchLimit) {
-
         throw new UnsupportedOperationException("Unimplemented method 'findUsersByUsername'");
     }
 
     /**
-     * Atualiza a senha do usuário associado ao e-mail informado.
-     * A senha é atualizada somente se o código de redefinição for válido e não
-     * expirado.
-     * Após atualização, a solicitação de redefinição é removida e o usuário é
-     * notificado por e-mail.
+     * Updates the password of the user associated with the provided email.
+     * This method is only allowed if there is a valid and non-expired reset password request.
+     * After the update, the reset request is removed and the user is notified by email.
      *
-     * @param email       O e-mail do usuário que terá a senha atualizada.
-     * @param newPassword A nova senha em texto puro.
-     * @throws IllegalArgumentException Se a nova senha for nula ou vazia.
-     * @throws NotFound                 Se a solicitação de redefinição ou usuário
-     *                                  não forem encontrados.
-     * @throws Expired                  Se o código de redefinição estiver expirado.
+     * @param email       The email of the user whose password will be updated.
+     * @param newPassword The new password in plain text.
+     * @throws IllegalArgumentException If the new password is null or empty.
+     * @throws NotFound                 If the reset request or user is not found.
+     * @throws Expired                  If the reset request has expired.
      */
     @Override
     @Transactional
     public void updateUserPasswordByEmail(final String email, final String newPassword) {
-
         final ResetPasswordDomain record = resetPasswordRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFound("Reset request not found."));
 
@@ -70,21 +64,26 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new NotFound("User with this email not found."));
 
         userRepository.updatePasswordByEmail(email, passwordEncoder.encode(newPassword));
-
         resetPasswordRepository.deleteByEmail(email);
 
         sendResetPasswordEmail(email, user.username());
 
-        log.info("User password updated and reset token deleted for email: {}", email);
-
+        log.info("Password successfully updated for email: {}. Reset password record removed.", email);
     }
 
+    /**
+     * Sends a confirmation email to notify the user that the password has been updated.
+     *
+     * @param email    The email of the user.
+     * @param username The username of the user.
+     * @throws InternalServerError If there is an error while sending the email.
+     */
     private void sendResetPasswordEmail(final String email, final String username) {
         try {
             emailService.sendPasswordUpdated(email, username);
         } catch (MessagingException e) {
-            log.error("Failed to send reset password email to {}: {}", email, e.getMessage(), e);
-            throw new InternalServerError("Failed to send reset password email", e);
+            log.error("Failed to send password update notification to {}: {}", email, e.getMessage(), e);
+            throw new InternalServerError("Failed to send password update email", e);
         }
     }
 }

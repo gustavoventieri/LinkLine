@@ -8,22 +8,22 @@ import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Utilitário para geração de códigos numéricos aleatórios de 6 dígitos.
+ * Utility for generating random 6-digit numeric codes.
  */
 @Component
 @Slf4j
 public class GenerateCodeUtilsImpl implements GenerateCodeUtils {
 
     /**
-     * Gera um código numérico aleatório de 6 dígitos.
+     * Generates a random 6-digit numeric code.
      *
-     * @return código gerado como String
+     * @return generated code as a String
      */
     @Override
     public String generateCode() {
         int code = ThreadLocalRandom.current().nextInt(100000, 1000000);
         String codeStr = String.valueOf(code);
-        log.debug("Código gerado: {}", codeStr);
+        log.debug("Generated code: {}", codeStr);
         return codeStr;
     }
 }

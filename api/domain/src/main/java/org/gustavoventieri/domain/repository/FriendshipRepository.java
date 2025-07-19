@@ -15,7 +15,7 @@ public interface FriendshipRepository {
 
     void updateStatus(UUID requestId, RequestStatus status);
 
-    Optional<FriendshipDomain> deleteById(UUID requestId);
+    void deleteById(UUID requestId);
 
     Optional<FriendshipDomain> findById(UUID requestId);
 

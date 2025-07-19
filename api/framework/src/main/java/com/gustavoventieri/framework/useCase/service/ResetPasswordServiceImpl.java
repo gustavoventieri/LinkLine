@@ -23,37 +23,34 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Serviço responsável pelo gerenciamento do fluxo de redefinição de senha,
- * incluindo envio e reenvio de códigos de recuperação, verificação do código,
- * e atualização da senha do usuário.
+ * Service responsible for managing the password reset flow,
+ * including sending and resending recovery codes, verifying the code,
+ * and updating the user's password.
  */
 @Service
 @RequiredArgsConstructor
-@Slf4j // logger
+@Slf4j
 public class ResetPasswordServiceImpl implements ResetPasswordService {
 
     private static final int RESET_CODE_EXPIRATION_MINUTES = 10;
 
-    // Dependency Inversion Principle
     private final ResetPasswordRepository resetPasswordRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final GenerateCodeUtils generateCodeUtils;
 
     /**
-     * Envia um código para redefinição de senha para o e-mail informado.
-     * Gera um código aleatório com validade definida e envia via e-mail.
+     * Initiates the password reset process by sending a verification code
+     * to the specified email address. A random code is generated with a
+     * defined expiration time and sent via email.
      *
-     * @param email O e-mail do usuário que solicitou a redefinição de senha.
-     * @return O código gerado para redefinição.
-     * @throws NotFound            Se o usuário com o e-mail informado não for
-     *                             encontrado.
-     * @throws InternalServerError Se ocorrer erro ao enviar o e-mail.
+     * @param email The email of the user who requested the password reset.
+     * @throws NotFound            If no user is found with the provided email.
+     * @throws InternalServerError If an error occurs while sending the email.
      */
     @Override
     @Transactional
     public void initiateResetPassword(final String email) {
-
         userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFound("User with this email was not found."));
 
@@ -63,24 +60,20 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
 
         sendResetPasswordEmail(email, record.code());
 
-        log.info("Reset password code sent to {}", email);
-
+        log.info("Password reset code sent to {}", email);
     }
 
     /**
-     * Reenvia um novo código de redefinição de senha para o e-mail informado.
-     * O código anterior deve existir para que seja possível reenvio.
+     * Resends a new password reset code to the specified email.
+     * A reset request must already exist in order to resend the code.
      *
-     * @param email O e-mail do usuário para o qual será enviado o novo código.
-     * @return O novo código gerado para redefinição.
-     * @throws NotFound            Se não existir um pedido de redefinição para o
-     *                             e-mail informado.
-     * @throws InternalServerError Se ocorrer erro ao enviar o e-mail.
+     * @param email The email of the user to receive the new reset code.
+     * @throws NotFound            If no reset request exists for the given email.
+     * @throws InternalServerError If an error occurs while sending the email.
      */
     @Override
     @Transactional
     public void resendResetPasswordCode(final String email) {
-
         resetPasswordRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFound("Reset password request not found."));
 
@@ -90,18 +83,17 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
 
         sendResetPasswordEmail(email, record.code());
 
-        log.info("Reset password code re-sent to {}", email);
-
+        log.info("New password reset code re-sent to {}", email);
     }
 
     /**
-     * Verifica se o código de redefinição de senha é válido e não expirou.
-     * Se o código estiver expirado, a solicitação de redefinição será removida.
+     * Validates whether the provided reset password code is valid and not expired.
+     * If the code is expired, the associated reset request will be deleted.
      *
-     * @param email O e-mail do usuário associado ao código.
-     * @param code  O código de redefinição para ser verificado.
-     * @throws NotFound Se o código ou e-mail forem inválidos.
-     * @throws Expired  Se o código já tiver expirado.
+     * @param email The email associated with the reset code.
+     * @param code  The reset code to be validated.
+     * @throws NotFound If the email or code is invalid.
+     * @throws Expired  If the reset code has expired.
      */
     @Override
     @Transactional
@@ -111,25 +103,44 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
 
         if (Instant.now().isAfter(record.expiresAt())) {
             resetPasswordRepository.deleteByEmail(email);
-            log.info("Expired reset password code deleted for email: {}", email);
+            log.info("Expired reset password code removed for email: {}", email);
             throw new Expired("Reset password code has expired.");
         }
 
-        log.info("Reset password code verified for email: {}", email);
+        log.info("Reset password code validated for email: {}", email);
     }
 
     // Helpers
 
+    /**
+     * Generates a new random reset password code and calculates its expiration.
+     *
+     * @return GeneratedData containing the code and expiration timestamp.
+     */
     private GeneratedData generateResetPasswordData() {
         final String code = generateCodeUtils.generateCode();
         final Instant expiresAt = Instant.now().plus(RESET_CODE_EXPIRATION_MINUTES, ChronoUnit.MINUTES);
         return new GeneratedData(code, expiresAt);
     }
 
+    /**
+     * Persists or updates the password reset record in the repository.
+     *
+     * @param email     The email address associated with the reset request.
+     * @param code      The generated reset code.
+     * @param expiresAt The expiration timestamp for the reset code.
+     */
     private void persistResetPasswordRecord(final String email, final String code, final Instant expiresAt) {
         resetPasswordRepository.saveOrUpdate(email, code, expiresAt);
     }
 
+    /**
+     * Sends the reset code to the user's email using the EmailService.
+     *
+     * @param email The recipient email address.
+     * @param code  The reset password code to send.
+     * @throws InternalServerError If an exception occurs during email sending.
+     */
     private void sendResetPasswordEmail(final String email, final String code) {
         try {
             emailService.sendResetPasswordCode(email, code);
@@ -138,5 +149,4 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
             throw new InternalServerError("Failed to send reset password email", e);
         }
     }
-
 }

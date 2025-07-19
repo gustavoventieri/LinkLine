@@ -20,8 +20,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Implementação do repositório para operações relacionadas à verificação de
- * e-mail.
+ * Implementation of the repository for operations related to email
+ * verification.
  */
 @RequiredArgsConstructor
 @Repository
@@ -31,22 +31,20 @@ public class EmailConfirmationRepositoryImpl implements EmailConfirmationReposit
     private final EmailConfirmationOrm emailVerificationOrm;
 
     /**
-     * Salva ou atualiza o registro de verificação de e-mail.
+     * Saves or updates the email verification record.
      *
-     * @param email     e-mail do usuário
-     * @param username  nome de usuário
-     * @param password  senha criptografada
-     * @param code      código de verificação
-     * @param verified  flag indicando se o e-mail já foi verificado
-     * @param expiresAt data e hora de expiração do código
-     * @return domínio EmailVerification salvo/atualizado
-     * @throws BadRequest          em caso de violação de integridade dos dados
-     * @throws InternalServerError em caso de erro inesperado
+     * @param email     User's email address
+     * @param username  Username
+     * @param password  Encrypted password
+     * @param code      Verification code
+     * @param verified  Flag indicating whether the email has been verified
+     * @param expiresAt Expiration date and time of the verification code
+     * @throws BadRequest          if a data integrity violation occurs
+     * @throws InternalServerError if an unexpected error occurs
      */
     @Override
     public void saveOrUpdate(final String email, final String username, final String password,
-            final String code, final boolean verified,
-            final Instant expiresAt) {
+            final String code, final boolean verified, final Instant expiresAt) {
         try {
             final Optional<EmailConfirmation> existing = emailVerificationOrm.findByEmail(email);
 
@@ -77,12 +75,12 @@ public class EmailConfirmationRepositoryImpl implements EmailConfirmationReposit
     }
 
     /**
-     * Busca EmailVerification por e-mail e código.
+     * Finds email verification record by email and code.
      *
-     * @param email e-mail do usuário
-     * @param code  código de verificação
-     * @return Optional com EmailVerificationDomain caso encontrado
-     * @throws InternalServerError em caso de erro inesperado
+     * @param email User's email address
+     * @param code  Verification code
+     * @return Optional containing the EmailConfirmationDomain if found
+     * @throws InternalServerError if an unexpected error occurs
      */
     @Override
     public Optional<EmailConfirmationDomain> findByEmailAndCode(final String email, final String code) {
@@ -98,11 +96,11 @@ public class EmailConfirmationRepositoryImpl implements EmailConfirmationReposit
     }
 
     /**
-     * Busca EmailVerification por e-mail.
+     * Finds email verification record by email.
      *
-     * @param email e-mail do usuário
-     * @return Optional com EmailVerificationDomain caso encontrado
-     * @throws InternalServerError em caso de erro inesperado
+     * @param email User's email address
+     * @return Optional containing the EmailConfirmationDomain if found
+     * @throws InternalServerError if an unexpected error occurs
      */
     @Override
     public Optional<EmailConfirmationDomain> findByEmail(final String email) {
@@ -117,10 +115,10 @@ public class EmailConfirmationRepositoryImpl implements EmailConfirmationReposit
     }
 
     /**
-     * Remove registro de verificação de e-mail pelo e-mail.
+     * Deletes the email verification record by email.
      *
-     * @param email e-mail do usuário
-     * @throws InternalServerError em caso de erro inesperado
+     * @param email User's email address
+     * @throws InternalServerError if an unexpected error occurs
      */
     @Override
     public void deleteByEmail(final String email) {

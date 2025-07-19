@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Implementação do repositório para operações relacionadas a Reset Password.
+ * Implementation of the repository for operations related to Reset Password.
  */
 @RequiredArgsConstructor
 @Repository
@@ -30,14 +30,13 @@ public class ResetPasswordRepositoryImpl implements ResetPasswordRepository {
     private final ResetPasswordOrm resetPasswordOrm;
 
     /**
-     * Salva ou atualiza o registro de reset de senha para o e-mail informado.
+     * Saves or updates the reset password record for the given email.
      *
-     * @param email     o e-mail do usuário
-     * @param code      código de reset de senha
-     * @param expiresAt data e hora de expiração do código
-     * @return o domínio ResetPassword salvo/atualizado
-     * @throws BadRequest          em caso de violação de integridade dos dados
-     * @throws InternalServerError em caso de erro inesperado
+     * @param email     the user's email
+     * @param code      the reset password code
+     * @param expiresAt the expiration date and time of the code
+     * @throws BadRequest          in case of data integrity violation
+     * @throws InternalServerError in case of unexpected error
      */
     @Override
     public void saveOrUpdate(final String email, final String code, final Instant expiresAt) {
@@ -65,12 +64,12 @@ public class ResetPasswordRepositoryImpl implements ResetPasswordRepository {
     }
 
     /**
-     * Busca ResetPassword pelo e-mail e código.
+     * Finds ResetPassword by email and code.
      *
-     * @param email o e-mail do usuário
-     * @param code  código de reset de senha
-     * @return Optional com ResetPasswordDomain caso encontrado
-     * @throws InternalServerError em caso de erro inesperado
+     * @param email the user's email
+     * @param code  the reset password code
+     * @return Optional with ResetPasswordDomain if found
+     * @throws InternalServerError in case of unexpected error
      */
     @Override
     public Optional<ResetPasswordDomain> findByEmailAndCode(final String email, final String code) {
@@ -85,11 +84,11 @@ public class ResetPasswordRepositoryImpl implements ResetPasswordRepository {
     }
 
     /**
-     * Busca ResetPassword pelo e-mail.
+     * Finds ResetPassword by email.
      *
-     * @param email o e-mail do usuário
-     * @return Optional com ResetPasswordDomain caso encontrado
-     * @throws InternalServerError em caso de erro inesperado
+     * @param email the user's email
+     * @return Optional with ResetPasswordDomain if found
+     * @throws InternalServerError in case of unexpected error
      */
     @Override
     public Optional<ResetPasswordDomain> findByEmail(final String email) {
@@ -104,10 +103,10 @@ public class ResetPasswordRepositoryImpl implements ResetPasswordRepository {
     }
 
     /**
-     * Remove registro de reset de senha pelo e-mail.
+     * Deletes the reset password record by email.
      *
-     * @param email o e-mail do usuário
-     * @throws InternalServerError em caso de erro inesperado
+     * @param email the user's email
+     * @throws InternalServerError in case of unexpected error
      */
     @Override
     public void deleteByEmail(final String email) {

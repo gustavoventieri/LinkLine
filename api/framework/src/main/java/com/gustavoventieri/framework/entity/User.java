@@ -2,11 +2,10 @@ package com.gustavoventieri.framework.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -42,26 +41,19 @@ public class User {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    // === Chats ===
     @JsonBackReference(value = "chat-participants")
     @ManyToMany(mappedBy = "participants")
     private Set<Chat> chats;
 
-    // === Mensagens ===
     @JsonManagedReference(value = "messages-sent")
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Message> messagesSent;
 
-    // === Amizades ===
-    @JsonManagedReference(value = "user-friendships")
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Friendship> friendshipsUser;
+    @JsonManagedReference(value = "friendships-sent")
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Friendship> friendshipsSent;
 
-    @JsonManagedReference(value = "friend-friendships")
-    @OneToMany(mappedBy = "friend", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Friendship> friendshipsFriend;
-
-    @JsonManagedReference(value = "requested-by-friendships")
-    @OneToMany(mappedBy = "requestedBy", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Friendship> friendshipsRequested;
+    @JsonManagedReference(value = "friendships-received")
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Friendship> friendshipsReceived;
 }

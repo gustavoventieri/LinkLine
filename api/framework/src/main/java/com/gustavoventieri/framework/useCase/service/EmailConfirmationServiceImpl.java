@@ -25,9 +25,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Serviço responsável pelo processo de verificação de e-mail,
- * incluindo envio e reenvio de códigos de confirmação, bem como
- * a validação desses códigos para confirmar a autenticidade do e-mail.
+ * Service responsible for the email verification process,
+ * including sending and resending confirmation codes, as well as
+ * validating these codes to confirm the authenticity of the email.
  */
 @Service
 @RequiredArgsConstructor
@@ -44,15 +44,14 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
     private final PasswordEncoder passwordEncoder;
 
     /**
-     * Inicia o processo de verificação de e-mail enviando um código de confirmação
-     * ao endereço fornecido.
+     * Starts the email verification process by sending a confirmation code
+     * to the provided email address.
      *
-     * @param email    O e-mail do usuário.
-     * @param username O nome de usuário desejado.
-     * @param password A senha que será armazenada temporariamente codificada.
-     * @throws Conflict            Se o nome de usuário ou e-mail já estiverem em
-     *                             uso.
-     * @throws InternalServerError Se falhar ao enviar o e-mail.
+     * @param email    The user's email.
+     * @param username The desired username.
+     * @param password The password that will be temporarily stored encoded.
+     * @throws Conflict            If the username or email are already in use.
+     * @throws InternalServerError If sending the email fails.
      */
     @Override
     @Transactional
@@ -88,12 +87,11 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
     }
 
     /**
-     * Reenvia um novo código de confirmação para o e-mail informado.
+     * Resends a new confirmation code to the given email.
      *
-     * @param email O e-mail para o qual será reenviado o código.
-     * @throws NotFound            Se não existir um registro pendente de
-     *                             verificação.
-     * @throws InternalServerError Se falhar ao enviar o e-mail.
+     * @param email The email to which the code will be resent.
+     * @throws NotFound            If no pending verification record exists.
+     * @throws InternalServerError If sending the email fails.
      */
     @Override
     @Transactional
@@ -122,14 +120,14 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
     }
 
     /**
-     * Valida o código de verificação enviado por e-mail.
-     * Se o código for válido e ainda estiver dentro do prazo, o e-mail é
-     * confirmado.
+     * Validates the verification code sent via email.
+     * If the code is valid and still within the expiry period, the email is
+     * confirmed.
      *
-     * @param email O e-mail a ser confirmado.
-     * @param code  O código de verificação enviado para o e-mail.
-     * @throws NotFound Se o código ou e-mail forem inválidos.
-     * @throws Expired  Se o código tiver expirado.
+     * @param email The email to be confirmed.
+     * @param code  The verification code sent to the email.
+     * @throws NotFound If the code or email are invalid.
+     * @throws Expired  If the code has expired.
      */
     @Override
     @Transactional

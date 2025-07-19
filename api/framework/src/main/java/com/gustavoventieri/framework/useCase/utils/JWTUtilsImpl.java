@@ -22,8 +22,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Utilitário para criação, validação e extração de dados de tokens JWT.
- * Utiliza a biblioteca Auth0 JWT para operações criptográficas.
+ * Utility for creating, validating, and extracting data from JWT tokens.
+ * Uses the Auth0 JWT library for cryptographic operations.
  */
 @Component
 @Slf4j
@@ -36,12 +36,12 @@ public class JWTUtilsImpl implements JWTUtils {
     private final long EXPIRATION_HOURS;
 
     /**
-     * Construtor que inicializa a chave secreta, emissor e tempo de expiração do
-     * token.
+     * Constructor that initializes the secret key, issuer, and token expiration
+     * time.
      *
-     * @param jwtSecret       segredo usado na assinatura HMAC256 do token
-     * @param issuer          emissor do token JWT
-     * @param expirationHours validade do token em horas
+     * @param jwtSecret       secret used for HMAC256 token signature
+     * @param issuer          JWT token issuer
+     * @param expirationHours token validity in hours
      */
     public JWTUtilsImpl(
             @Value("${spring.security.jwt.password}") String jwtSecret,
@@ -50,15 +50,15 @@ public class JWTUtilsImpl implements JWTUtils {
         this.algorithm = Algorithm.HMAC256(jwtSecret);
         this.ISSUER = issuer;
         this.EXPIRATION_HOURS = expirationHours;
-        log.info("JWTUtils inicializado com emissor '{}' e expiração de {} horas", issuer, expirationHours);
+        log.info("JWTUtils initialized with issuer '{}' and expiration of {} hours", issuer, expirationHours);
     }
 
     /**
-     * Gera um token JWT para o usuário fornecido.
+     * Generates a JWT token for the given user.
      *
-     * @param user usuário para quem o token será gerado
-     * @return token JWT assinado como String
-     * @throws JWTException em caso de falha na criação do token
+     * @param user the user for whom the token will be generated
+     * @return signed JWT token as a String
+     * @throws JWTException if token creation fails
      */
     @Override
     public String generateUserToken(UserDomain user) {
@@ -68,19 +68,19 @@ public class JWTUtilsImpl implements JWTUtils {
                     .withSubject(user.id().toString())
                     .withExpiresAt(this.generateExpirationDate())
                     .sign(this.algorithm);
-            log.debug("Token JWT gerado para usuário {}", user.id());
+            log.debug("JWT token generated for user {}", user.id());
             return token;
         } catch (JWTCreationException e) {
-            log.error("Erro ao gerar token JWT para usuário {}", user.id(), e);
+            log.error("Error generating JWT token for user {}", user.id(), e);
             throw new JWTException("Error while generating JWT token");
         }
     }
 
     /**
-     * Valida o token JWT e extrai o ID do usuário contido nele.
+     * Validates the JWT token and extracts the user ID contained in it.
      *
-     * @param token token JWT a ser validado
-     * @return ID do usuário como String se válido; null se inválido ou expirado
+     * @param token JWT token to be validated
+     * @return user ID as a String if valid; null if invalid or expired
      */
     @Override
     public String validateAndExtractUserId(String token) {
@@ -90,27 +90,26 @@ public class JWTUtilsImpl implements JWTUtils {
                     .build()
                     .verify(token)
                     .getSubject();
-            log.debug("Token JWT validado com sucesso para usuário {}", userId);
+            log.debug("JWT token successfully validated for user {}", userId);
             return userId;
         } catch (JWTVerificationException e) {
-            log.warn("Token JWT inválido ou expirado", e);
+            log.warn("Invalid or expired JWT token", e);
             return null;
         }
     }
 
     /**
-     * Recupera o ID do usuário a partir do cookie "token" presente na requisição
-     * HTTP.
+     * Retrieves the user ID from the "token" cookie present in the HTTP request.
      *
-     * @param request requisição HTTP contendo o cookie JWT
-     * @return UUID do usuário extraído do token
-     * @throws JWTException se não encontrar cookie, token inválido ou expirado
+     * @param request HTTP request containing the JWT cookie
+     * @return UUID of the user extracted from the token
+     * @throws JWTException if cookie not found, or token is invalid or expired
      */
     @Override
     public UUID getUserIdFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
-            log.error("Cookies não encontrados na requisição");
+            log.error("No cookies found in request");
             throw new JWTException("Cookies not found");
         }
 
@@ -120,24 +119,24 @@ public class JWTUtilsImpl implements JWTUtils {
                 String userId = validateAndExtractUserId(token);
 
                 if (userId == null) {
-                    log.error("Token JWT inválido ou expirado no cookie");
+                    log.error("Invalid or expired JWT token in cookie");
                     throw new JWTException("Invalid or expired token");
                 }
 
-                log.info("ID de usuário extraído do cookie: {}", userId);
+                log.info("User ID extracted from cookie: {}", userId);
                 return UUID.fromString(userId);
             }
         }
 
-        log.error("Cookie de token JWT não encontrado");
+        log.error("JWT token cookie not found");
         throw new JWTException("Token not found in cookies");
     }
 
     /**
-     * Gera a data/hora de expiração do token com base na hora atual mais o tempo
-     * configurado.
+     * Generates the token expiration date/time based on the current time plus the
+     * configured duration.
      *
-     * @return instante de expiração do token
+     * @return expiration instant of the token
      */
     private Instant generateExpirationDate() {
         return LocalDateTime.now()

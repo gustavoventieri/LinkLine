@@ -18,7 +18,6 @@ public class FriendshipMapper {
                 domain.id(),
                 null,
                 null,
-                null,
                 domain.status(),
                 domain.createdAt(),
                 domain.updatedAt());
@@ -30,34 +29,27 @@ public class FriendshipMapper {
 
         return new FriendshipDomain(
                 entity.getId(),
-                null, // user
-                null, // friend
-                null, // requestedBy
+                null,
+                null,
                 entity.getStatus(),
                 entity.getCreatedAt(),
-                entity.getUpdatedAt()
-
-        );
+                entity.getUpdatedAt());
     }
 
     public static Friendship toEntityComplete(FriendshipDomain domain) {
         if (domain == null)
             return null;
 
-        User user = UserMapper.toEntityBasic(domain.user());
-        User friend = UserMapper.toEntityBasic(domain.friend());
-        User requestedBy = UserMapper.toEntityBasic(domain.requestedBy());
+        User sender = UserMapper.toEntityBasic(domain.sender());
+        User receiver = UserMapper.toEntityBasic(domain.receiver());
 
         return new Friendship(
                 domain.id(),
-                user,
-                friend,
-                requestedBy,
+                sender,
+                receiver,
                 domain.status(),
                 domain.createdAt(),
-                domain.updatedAt()
-
-        );
+                domain.updatedAt());
     }
 
     public static FriendshipDomain toDomainComplete(Friendship entity) {
@@ -66,26 +58,22 @@ public class FriendshipMapper {
 
         return new FriendshipDomain(
                 entity.getId(),
-                UserMapper.toDomainBasic(entity.getUser()),
-                UserMapper.toDomainBasic(entity.getFriend()),
-                UserMapper.toDomainBasic(entity.getRequestedBy()),
+                UserMapper.toDomainBasic(entity.getSender()),
+                UserMapper.toDomainBasic(entity.getReceiver()),
                 entity.getStatus(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt());
     }
 
-    public static GetAllFriendships toNotificationDTO(FriendshipDomain friendship, UUID requesterId) {
-        return friendship.user().id().equals(requesterId)
-                ? new GetAllFriendships(
-                        friendship.id(),
-                        friendship.user().username(),
-                        friendship.friend().username(),
-                        friendship.status().name())
-                : new GetAllFriendships(
-                        friendship.id(),
-                        friendship.user().username(),
-                        friendship.friend().username(),
-                        friendship.status().name());
+    public static GetAllFriendships toNotificationDTO(FriendshipDomain friendship) {
+        String senderUsername = friendship.sender() != null ? friendship.sender().username() : null;
+        String receiverUsername = friendship.receiver() != null ? friendship.receiver().username() : null;
+
+        return new GetAllFriendships(
+                friendship.id(),
+                senderUsername,
+                receiverUsername,
+                friendship.status().name());
     }
 
 }
