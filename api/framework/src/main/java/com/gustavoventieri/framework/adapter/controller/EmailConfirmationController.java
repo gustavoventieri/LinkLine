@@ -45,7 +45,7 @@ public class EmailConfirmationController {
     public ResponseEntity<String> sendConfirmationCode(
             @RequestBody @Valid SendConfirmationEmailCodeRequestImpl request) {
         log.info("Enviando código de confirmação para o email: {}", request.email());
-        emailConfirmationService.initiateConfirmation(request.email(), request.username(), request.password());
+        emailConfirmationService.initiateConfirmationEmail(request.email(), request.username(), request.password());
         return ResponseEntity.status(HttpStatus.OK).body("Verification Email Sent");
     }
 

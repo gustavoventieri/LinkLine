@@ -32,25 +32,25 @@ public class FriendshiplServiceImpl implements FriendshipService {
 
     @Override
     @Transactional
-    public void createFriendship(UUID userId, String friendUsername) {
-        UserDomain sender = userRepository.findById(userId)
+    public void createFriendship(final UUID userId, final String friendUsername) {
+        final UserDomain sender = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário solicitante não encontrado"));
 
-        UserDomain friend = userRepository.findByUsername(friendUsername)
+        final UserDomain friend = userRepository.findByUsername(friendUsername)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário destinatário não encontrado"));
 
         if (sender.id().equals(friend.id())) {
             throw new IllegalArgumentException("Você não pode enviar solicitação de amizade para si mesmo.");
         }
 
-        List<RequestStatus> blockedStatuses = Arrays.asList(RequestStatus.PENDING, RequestStatus.ACCEPTED);
+        final List<RequestStatus> blockedStatuses = Arrays.asList(RequestStatus.PENDING, RequestStatus.ACCEPTED);
 
         friendshipRepository.findExisting(userId, friend.id(), blockedStatuses)
                 .ifPresent(friendship -> {
                     throw new IllegalStateException("Você já enviou uma solicitação ou já são amigos.");
                 });
 
-        Friendship friendship = new Friendship(
+        final Friendship friendship = new Friendship(
                 null,
                 UserMapper.toEntityBasic(sender),
                 UserMapper.toEntityBasic(friend),
@@ -63,7 +63,7 @@ public class FriendshiplServiceImpl implements FriendshipService {
     }
 
     @Override
-    public void updateFriendship(UUID friendshipId, String newStatus) {
+    public void updateFriendship(final UUID friendshipId, final String newStatus) {
 
         // FriendshipDomain friendship =
         // friendshipRepository.findById(friendshipId).orElseThrow();
@@ -71,15 +71,15 @@ public class FriendshiplServiceImpl implements FriendshipService {
     }
 
     @Override
-    public void deleteFriendship(UUID userId, UUID friendId) {
+    public void deleteFriendship(final UUID userId, final UUID friendId) {
 
     }
 
     @Override
-    public List<GetAllFriendships> getAllByUserId(UUID userId) {
+    public List<GetAllFriendships> getAllByUserId(final UUID userId) {
 
         log.debug("Buscando amizades e solicitações do user: {}", userId);
-        List<FriendshipDomain> friendships = friendshipRepository.getAllByUserId(userId);
+        final List<FriendshipDomain> friendships = friendshipRepository.getAllByUserId(userId);
         return friendships.stream()
                 .map(friendship -> FriendshipMapper.toNotificationDTO(friendship, userId))
                 .toList();

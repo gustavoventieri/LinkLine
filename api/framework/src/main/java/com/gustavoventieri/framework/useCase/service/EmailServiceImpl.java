@@ -17,12 +17,6 @@ import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-/**
- * Utilitário para envio de emails utilizando templates Thymeleaf.
- * Fornece métodos para envio de emails com códigos de confirmação, redefinição
- * de senha,
- * notificações de criação de conta e alteração de senha.
- */
 @Component
 @Slf4j
 public class EmailServiceImpl implements EmailService {
@@ -31,31 +25,16 @@ public class EmailServiceImpl implements EmailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
 
-    /**
-     * Construtor padrão.
-     *
-     * @param fromEmail      endereço de email remetente (configurado em
-     *                       spring.mail.username)
-     * @param mailSender     serviço para envio de emails
-     * @param templateEngine mecanismo de templates Thymeleaf
-     */
-    public EmailServiceImpl(@Value("${spring.mail.username}") String fromEmail,
-            JavaMailSender mailSender,
-            TemplateEngine templateEngine) {
+    public EmailServiceImpl(final @Value("${spring.mail.username}") String fromEmail,
+                            final JavaMailSender mailSender,
+                            final TemplateEngine templateEngine) {
         this.fromEmail = fromEmail;
         this.mailSender = mailSender;
         this.templateEngine = templateEngine;
     }
 
-    /**
-     * Envia um email contendo código de confirmação para o endereço especificado.
-     *
-     * @param to   endereço de email do destinatário
-     * @param code código de confirmação a ser enviado
-     * @throws MessagingException caso ocorra erro no envio do email
-     */
     @Override
-    public void sendConfirmationCode(String to, String code) throws MessagingException {
+    public void sendConfirmationCode(final String to, final String code) throws MessagingException {
         log.info("Enviando código de confirmação para {}", to);
         sendEmailFromTemplate(
                 to,
@@ -65,16 +44,8 @@ public class EmailServiceImpl implements EmailService {
         log.info("Código de confirmação enviado para {}", to);
     }
 
-    /**
-     * Envia um email contendo código para redefinição de senha para o endereço
-     * especificado.
-     *
-     * @param to   endereço de email do destinatário
-     * @param code código de redefinição de senha
-     * @throws MessagingException caso ocorra erro no envio do email
-     */
     @Override
-    public void sendResetPasswordCode(String to, String code) throws MessagingException {
+    public void sendResetPasswordCode(final String to, final String code) throws MessagingException {
         log.info("Enviando código de redefinição de senha para {}", to);
         sendEmailFromTemplate(
                 to,
@@ -84,16 +55,8 @@ public class EmailServiceImpl implements EmailService {
         log.info("Código de redefinição de senha enviado para {}", to);
     }
 
-    /**
-     * Envia um email notificando a criação de uma nova conta para o usuário
-     * especificado.
-     *
-     * @param to       endereço de email do destinatário
-     * @param username nome de usuário da conta criada
-     * @throws MessagingException caso ocorra erro no envio do email
-     */
     @Override
-    public void sendAccountCreatedMessage(String to, String username) throws MessagingException {
+    public void sendAccountCreatedMessage(final String to, final String username) throws MessagingException {
         log.info("Enviando mensagem de conta criada para {}", to);
         sendEmailFromTemplate(
                 to,
@@ -103,15 +66,8 @@ public class EmailServiceImpl implements EmailService {
         log.info("Mensagem de conta criada enviada para {}", to);
     }
 
-    /**
-     * Envia um email notificando que a senha do usuário foi alterada com sucesso.
-     *
-     * @param to       endereço de email do destinatário
-     * @param username nome de usuário cuja senha foi alterada
-     * @throws MessagingException caso ocorra erro no envio do email
-     */
     @Override
-    public void sendPasswordUpdated(String to, String username) throws MessagingException {
+    public void sendPasswordUpdated(final String to, final String username) throws MessagingException {
         log.info("Enviando notificação de senha alterada para {}", to);
         sendEmailFromTemplate(
                 to,
@@ -121,28 +77,21 @@ public class EmailServiceImpl implements EmailService {
         log.info("Notificação de senha alterada enviada para {}", to);
     }
 
-    /**
-     * Método genérico para enviar email utilizando um template Thymeleaf.
-     *
-     * @param to           endereço do destinatário
-     * @param subject      assunto do email
-     * @param templateName nome do template Thymeleaf (arquivo HTML)
-     * @param variables    mapa de variáveis para o template
-     * @throws MessagingException caso ocorra erro no envio do email
-     */
-    private void sendEmailFromTemplate(String to, String subject, String templateName, Map<String, Object> variables)
-            throws MessagingException {
-        MimeMessage message = mailSender.createMimeMessage();
+    private void sendEmailFromTemplate(final String to,
+                                       final String subject,
+                                       final String templateName,
+                                       final Map<String, Object> variables) throws MessagingException {
+        final MimeMessage message = mailSender.createMimeMessage();
 
-        MimeMessageHelper helper = new MimeMessageHelper(
+        final MimeMessageHelper helper = new MimeMessageHelper(
                 message,
                 MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
                 StandardCharsets.UTF_8.name());
 
-        Context context = new Context();
+        final Context context = new Context();
         context.setVariables(variables);
 
-        String html = templateEngine.process(templateName, context);
+        final String html = templateEngine.process(templateName, context);
 
         helper.setTo(to);
         helper.setSubject(subject);

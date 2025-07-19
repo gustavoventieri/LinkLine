@@ -1,18 +1,16 @@
 package com.gustavoventieri.framework.adapter.controller;
 
+import org.gustavoventieri.domain.service.ResetPasswordService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.gustavoventieri.framework.adapter.dto.request.auth.reset_password.ResetPasswordRequestImpl;
 import com.gustavoventieri.framework.adapter.dto.request.auth.reset_password.SendResetPasswordCodeRequestImpl;
 import com.gustavoventieri.framework.adapter.dto.request.auth.reset_password.VerifyResetPasswordCodeRequestImpl;
-import com.gustavoventieri.framework.useCase.service.ResetPasswordServiceImpl;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -30,7 +28,7 @@ import lombok.AllArgsConstructor;
 @Validated
 public class ResetPasswordController {
 
-    private final ResetPasswordServiceImpl resetPasswordServiceImpl;
+    private final ResetPasswordService resetPasswordService;
 
     /**
      * Envia um código para redefinição de senha para o e-mail informado.
@@ -41,7 +39,7 @@ public class ResetPasswordController {
      */
     @PostMapping("/send")
     public ResponseEntity<String> sendResetPasswordCode(@RequestBody @Valid SendResetPasswordCodeRequestImpl request) {
-        resetPasswordServiceImpl.sendResetPasswordCode(request.email());
+        resetPasswordService.initiateResetPassword(request.email());
         return ResponseEntity.status(HttpStatus.OK).body("Reset password code sent");
     }
 
@@ -56,7 +54,7 @@ public class ResetPasswordController {
     @PostMapping("/resend")
     public ResponseEntity<String> resendResetPasswordCode(
             @RequestBody @Valid SendResetPasswordCodeRequestImpl request) {
-        resetPasswordServiceImpl.resendResetPasswordCode(request.email());
+        resetPasswordService.resendResetPasswordCode(request.email());
         return ResponseEntity.status(HttpStatus.OK).body("Reset password code re-sent");
     }
 
@@ -71,21 +69,8 @@ public class ResetPasswordController {
     @PostMapping("/verify")
     public ResponseEntity<String> verifyResetPasswordCode(
             @RequestBody @Valid VerifyResetPasswordCodeRequestImpl request) {
-        resetPasswordServiceImpl.verifyResetPasswordCode(request.email(), request.code());
+        resetPasswordService.validateResetPasswordCode(request.email(), request.code());
         return ResponseEntity.status(HttpStatus.OK).body("Reset password code is valid");
     }
 
-    /**
-     * Atualiza a senha do usuário associada ao e-mail informado.
-     * Normalmente é chamado após a validação do código de redefinição.
-     * 
-     * @param request Objeto contendo o e-mail do usuário e a nova senha.
-     * @return ResponseEntity com status 200 OK e mensagem confirmando a atualização
-     *         da senha.
-     */
-    @PutMapping("/update")
-    public ResponseEntity<String> updatePassword(@RequestBody @Valid ResetPasswordRequestImpl request) {
-        resetPasswordServiceImpl.updateUserPasswordByEmail(request.email(), request.password());
-        return ResponseEntity.status(HttpStatus.OK).body("Password successfully updated");
-    }
 }
