@@ -1,6 +1,5 @@
 package com.gustavoventieri.framework.adapter.mapper;
 
-import java.util.UUID;
 
 import org.gustavoventieri.domain.dto.response.GetAllFriendships;
 import org.gustavoventieri.domain.entity.FriendshipDomain;
