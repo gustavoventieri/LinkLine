@@ -12,7 +12,5 @@ public interface FriendshipService {
 
     void updateFriendship(UUID friendshipId, RequestStatus newStatus, UUID currentUserId);
 
-    void deleteFriendship(UUID userId, UUID friendId);
-
     List<GetAllFriendships> getAllByUserId(UUID userId);
 }

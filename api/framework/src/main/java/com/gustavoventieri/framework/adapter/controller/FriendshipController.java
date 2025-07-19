@@ -95,4 +95,5 @@ public class FriendshipController {
         friendshipService.updateFriendship(friendshipId, updateFriendshipRequest.status(), userId);
         return ResponseEntity.status(HttpStatus.OK).body("Friendship status successfully updated.");
     }
+
 }

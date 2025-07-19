@@ -30,34 +30,34 @@ public class FriendshiplServiceImpl implements FriendshipService {
     private final UserRepository userRepository;
 
     /**
-     * Cria uma nova solicitação de amizade entre dois usuários.
+     * Creates a new friendship request between two users.
      *
-     * @param userId         ID do usuário solicitante
-     * @param friendUsername nome de usuário do destinatário da solicitação
+     * @param senderId         ID of the requesting user
+     * @param receiverUsername Username of the user receiving the request
      */
     @Override
     @Transactional
     public void createFriendship(final UUID senderId, final String receiverUsername) {
-        log.debug("Iniciando criação de amizade: userId={}, friendUsername={}", senderId, receiverUsername);
+        log.debug("Starting friendship creation: senderId={}, receiverUsername={}", senderId, receiverUsername);
 
         final UserDomain sender = userRepository.findById(senderId)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário solicitante não encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException("Requesting user not found"));
 
         final UserDomain receiver = userRepository.findByUsername(receiverUsername)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário destinatário não encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException("Target user not found"));
 
         if (sender.id().equals(receiver.id())) {
-            log.warn("Usuário {} tentou enviar amizade para si mesmo", senderId);
-            throw new IllegalArgumentException("Você não pode enviar solicitação de amizade para si mesmo.");
+            log.warn("User {} attempted to send a friendship request to themselves", senderId);
+            throw new IllegalArgumentException("You cannot send a friendship request to yourself.");
         }
 
         final List<RequestStatus> blockedStatuses = Arrays.asList(RequestStatus.PENDING, RequestStatus.ACCEPTED);
 
         friendshipRepository.findExisting(senderId, receiver.id(), blockedStatuses)
                 .ifPresent(existing -> {
-                    log.warn("Usuário {} já possui uma solicitação pendente ou amizade com {}", senderId,
+                    log.warn("User {} already has a pending request or is already friends with {}", senderId,
                             receiverUsername);
-                    throw new IllegalStateException("Você já enviou uma solicitação ou já são amigos.");
+                    throw new IllegalStateException("You already sent a request or are already friends.");
                 });
 
         final Friendship friendship = new Friendship(
@@ -70,63 +70,51 @@ public class FriendshiplServiceImpl implements FriendshipService {
 
         friendshipRepository.save(FriendshipMapper.toDomainComplete(friendship));
 
-        log.info("Solicitação de amizade enviada de {} para {}", sender.username(), receiver.username());
+        log.info("Friendship request sent from {} to {}", sender.username(), receiver.username());
     }
 
     /**
-     * Atualiza o status de uma amizade ou solicitação.
+     * Updates the status of a friendship request.
      *
-     * @param friendshipId ID da amizade
-     * @param newStatus    novo status da amizade
+     * @param friendshipId  ID of the friendship
+     * @param newStatus     New status to be set
+     * @param currentUserId ID of the user performing the update
      */
     @Override
     @Transactional
     public void updateFriendship(final UUID friendshipId, final RequestStatus newStatus, final UUID currentUserId) {
-        log.debug("Tentando atualizar amizade {} para {}", friendshipId, newStatus);
+        log.debug("Attempting to update friendship {} to {}", friendshipId, newStatus);
 
         final FriendshipDomain friendship = friendshipRepository.findById(friendshipId)
-                .orElseThrow(() -> new IllegalArgumentException("Amizade não encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Friendship not found"));
 
         final UUID senderId = friendship.sender().id();
         final UUID receiverId = friendship.receiver().id();
 
-        // Verifica se o usuário atual é o sender ou receiver
+        // Check if the current user is either the sender or receiver
         if (!currentUserId.equals(senderId) && !currentUserId.equals(receiverId)) {
-            throw new SecurityException("Você não tem permissão para atualizar esta amizade.");
+            throw new SecurityException("You do not have permission to update this friendship.");
         }
 
-        // Apenas o receiver pode aceitar a amizade
+        // Only the receiver can accept the friendship
         if (newStatus == RequestStatus.ACCEPTED && !currentUserId.equals(receiverId)) {
-            throw new SecurityException("Apenas o destinatário da solicitação pode aceitar a amizade.");
+            throw new SecurityException("Only the recipient of the request can accept the friendship.");
         }
 
         friendshipRepository.updateStatus(friendshipId, newStatus);
 
-        log.info("Status da amizade {} atualizado para {} pelo usuário {}", friendshipId, newStatus, currentUserId);
+        log.info("Friendship {} status updated to {} by user {}", friendshipId, newStatus, currentUserId);
     }
 
     /**
-     * Remove uma amizade entre dois usuários.
+     * Retrieves all friendships and requests for a given user.
      *
-     * @param userId   ID do usuário solicitante
-     * @param friendId ID do amigo a ser removido
-     */
-    @Override
-    public void deleteFriendship(final UUID userId, final UUID friendId) {
-        log.debug("Removendo amizade entre userId={} e friendId={}", userId, friendId);
-        // friendshipRepository.deleteFriendship(userId, friendId);
-        log.info("Amizade entre {} e {} removida com sucesso", userId, friendId);
-    }
-
-    /**
-     * Retorna todas as amizades e solicitações de amizade de um usuário.
-     *
-     * @param userId ID do usuário
-     * @return lista de amizades e notificações
+     * @param userId ID of the user
+     * @return list of friendships and notifications
      */
     @Override
     public List<GetAllFriendships> getAllByUserId(final UUID userId) {
-        log.debug("Buscando amizades e solicitações do user: {}", userId);
+        log.debug("Fetching all friendships and requests for user: {}", userId);
 
         final List<FriendshipDomain> friendships = friendshipRepository.getAllByUserId(userId);
 
@@ -134,7 +122,7 @@ public class FriendshiplServiceImpl implements FriendshipService {
                 .map(friendship -> FriendshipMapper.toNotificationDTO(friendship))
                 .toList();
 
-        log.info("Encontradas {} amizades/solicitações para o usuário {}", result.size(), userId);
+        log.info("Found {} friendships/requests for user {}", result.size(), userId);
         return result;
     }
 }

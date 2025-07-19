@@ -21,7 +21,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Implementation of the {@link FriendshipRepository} interface using the ORM layer.
+ * Implementation of the {@link FriendshipRepository} interface using the ORM
+ * layer.
  * Responsible for managing Friendship entities' persistence and retrieval.
  */
 @Repository
@@ -35,7 +36,8 @@ public class FriendshipRepositoryImpl implements FriendshipRepository {
      * Saves a new friendship record to the database.
      *
      * @param friendshipDomain the friendship domain object to be saved.
-     * @throws Conflict if there is a data integrity violation during save.
+     * @throws Conflict            if there is a data integrity violation during
+     *                             save.
      * @throws InternalServerError if any other error occurs.
      */
     @Override
@@ -56,8 +58,8 @@ public class FriendshipRepositoryImpl implements FriendshipRepository {
      * Updates the status of an existing friendship by its request ID.
      *
      * @param requestId the unique identifier of the friendship request.
-     * @param status the new status to set.
-     * @throws NotFound if the friendship with given ID does not exist.
+     * @param status    the new status to set.
+     * @throws NotFound            if the friendship with given ID does not exist.
      * @throws InternalServerError if any internal error occurs.
      */
     @Override
@@ -81,33 +83,11 @@ public class FriendshipRepositoryImpl implements FriendshipRepository {
     }
 
     /**
-     * Deletes a friendship by its request ID.
-     *
-     * @param requestId the unique identifier of the friendship request to be deleted.
-     * @throws NotFound if the friendship does not exist.
-     * @throws InternalServerError if any other internal error occurs.
-     */
-    @Override
-    public void deleteById(final UUID requestId) {
-        try {
-            if (!friendshipOrm.existsById(requestId)) {
-                throw new NotFound("Friendship not found for deletion");
-            }
-
-            friendshipOrm.deleteById(requestId);
-        } catch (final NotFound e) {
-            throw e; // propagate NotFound directly
-        } catch (final Exception e) {
-            log.error("Internal error occurred while deleting friendship {}", requestId, e);
-            throw new InternalServerError("Internal error occurred while deleting friendship", e);
-        }
-    }
-
-    /**
      * Finds a friendship by its unique request ID.
      *
      * @param requestId the unique identifier of the friendship request.
-     * @return an Optional containing the FriendshipDomain if found, or empty otherwise.
+     * @return an Optional containing the FriendshipDomain if found, or empty
+     *         otherwise.
      * @throws InternalServerError if any internal error occurs.
      */
     @Override
@@ -128,10 +108,11 @@ public class FriendshipRepositoryImpl implements FriendshipRepository {
     /**
      * Finds an existing friendship between two users with given statuses.
      *
-     * @param userId1 the first user's UUID.
-     * @param userId2 the second user's UUID.
+     * @param userId1  the first user's UUID.
+     * @param userId2  the second user's UUID.
      * @param statuses the list of statuses to filter by.
-     * @return an Optional containing the FriendshipDomain if found, or empty otherwise.
+     * @return an Optional containing the FriendshipDomain if found, or empty
+     *         otherwise.
      * @throws InternalServerError if any internal error occurs.
      */
     @Override
