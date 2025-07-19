@@ -20,7 +20,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Implementação do repositório para operações relacionadas à verificação de e-mail.
+ * Implementação do repositório para operações relacionadas à verificação de
+ * e-mail.
  */
 @RequiredArgsConstructor
 @Repository
@@ -39,32 +40,35 @@ public class EmailConfirmationRepositoryImpl implements EmailConfirmationReposit
      * @param verified  flag indicando se o e-mail já foi verificado
      * @param expiresAt data e hora de expiração do código
      * @return domínio EmailVerification salvo/atualizado
-     * @throws BadRequest em caso de violação de integridade dos dados
+     * @throws BadRequest          em caso de violação de integridade dos dados
      * @throws InternalServerError em caso de erro inesperado
      */
     @Override
-    public EmailConfirmationDomain saveOrUpdate(final String email, final String username, final String password, final String code, final boolean verified,
+    public EmailConfirmationDomain saveOrUpdate(final String email, final String username, final String password,
+            final String code, final boolean verified,
             final Instant expiresAt) {
         try {
             final Optional<EmailConfirmation> existing = emailVerificationOrm.findByEmail(email);
 
             final EmailConfirmation entity = existing
-                .map(ev -> {
-                    ev.setUsername(username);
-                    ev.setPassword(password);
-                    ev.setCode(code);
-                    ev.setVerified(verified);
-                    ev.setExpiresAt(expiresAt);
-                    ev.setCreatedAt(LocalDateTime.now());
-                    return ev;
-                })
-                .orElse(new EmailConfirmation(null, email, code, username, password, verified, expiresAt, LocalDateTime.now()));
+                    .map(ev -> {
+                        ev.setUsername(username);
+                        ev.setPassword(password);
+                        ev.setCode(code);
+                        ev.setVerified(verified);
+                        ev.setExpiresAt(expiresAt);
+                        ev.setCreatedAt(LocalDateTime.now());
+                        return ev;
+                    })
+                    .orElse(new EmailConfirmation(null, email, code, username, password, verified, expiresAt,
+                            LocalDateTime.now()));
 
             final EmailConfirmation saved = emailVerificationOrm.save(entity);
             log.info("EmailVerification saved/updated for email={}", email);
             return EmailVerificationMapper.toDomain(saved);
         } catch (DataIntegrityViolationException e) {
-            log.warn("Data integrity violation while saving email verification for email={}: {}", email, e.getMessage());
+            log.warn("Data integrity violation while saving email verification for email={}: {}", email,
+                    e.getMessage());
             throw new BadRequest("Data integrity violation while saving email verification", e);
         } catch (Exception e) {
             log.error("Internal error while saving/updating email verification for email={}", email, e);
@@ -84,11 +88,12 @@ public class EmailConfirmationRepositoryImpl implements EmailConfirmationReposit
     public Optional<EmailConfirmationDomain> findByEmailAndCode(final String email, final String code) {
         try {
             return emailVerificationOrm
-                .findByEmailAndCode(email, code)
-                .map(EmailVerificationMapper::toDomain);
+                    .findByEmailAndCode(email, code)
+                    .map(EmailVerificationMapper::toDomain);
         } catch (Exception e) {
             log.error("Internal error while finding email verification by email={} and code={}", email, code, e);
-            throw new InternalServerError("Internal error occurred while finding email verification by email and code", e);
+            throw new InternalServerError("Internal error occurred while finding email verification by email and code",
+                    e);
         }
     }
 
@@ -103,8 +108,8 @@ public class EmailConfirmationRepositoryImpl implements EmailConfirmationReposit
     public Optional<EmailConfirmationDomain> findByEmail(final String email) {
         try {
             return emailVerificationOrm
-                .findByEmail(email)
-                .map(EmailVerificationMapper::toDomain);
+                    .findByEmail(email)
+                    .map(EmailVerificationMapper::toDomain);
         } catch (Exception e) {
             log.error("Internal error while finding email verification by email={}", email, e);
             throw new InternalServerError("Internal error occurred while finding email verification by email", e);

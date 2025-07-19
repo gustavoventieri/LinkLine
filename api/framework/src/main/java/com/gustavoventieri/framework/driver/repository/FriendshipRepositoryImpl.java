@@ -8,8 +8,6 @@ import org.gustavoventieri.domain.entity.FriendshipDomain;
 import org.gustavoventieri.domain.enums.RequestStatus;
 import org.gustavoventieri.domain.exception.Conflict;
 import org.gustavoventieri.domain.exception.InternalServerError;
-import org.gustavoventieri.domain.exception.InvalidData;
-import org.gustavoventieri.domain.exception.NotFound;
 import org.gustavoventieri.domain.repository.FriendshipRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;

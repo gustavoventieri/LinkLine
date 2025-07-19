@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EmailConfirmationServiceImpl implements EmailConfirmationService {
 
     // Dependency Inversion Principle
-    private final EmailConfirmationRepository verificationRepository;
+    private final EmailConfirmationRepository emailConfirmationRepository;
     private final UserRepository userRepository;
     private final GenerateCodeUtils generateCodeUtils;
     private final EmailService emailService;
@@ -74,7 +74,7 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
     public void resendConfirmationCode(String email) {
         log.info("Starting resendVerificationCode for email: {}", email);
 
-        EmailConfirmationDomain record = verificationRepository.findByEmail(email)
+        EmailConfirmationDomain record = emailConfirmationRepository.findByEmail(email)
                 .orElseThrow(() -> {
                     log.warn("No verification record found for email: {}", email);
                     return new NotFound("Email not found for verification.");
@@ -103,7 +103,7 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
     public void validateConfirmationCode(String email, String code) {
         log.info("Validating verification code for email: {}", email);
 
-        EmailConfirmationDomain record = verificationRepository.findByEmailAndCode(email, code)
+        EmailConfirmationDomain record = emailConfirmationRepository.findByEmailAndCode(email, code)
                 .orElseThrow(() -> {
                     log.warn("Invalid verification code or email. Email: {}, Code: {}", email, code);
                     return new NotFound("Invalid verification code or email.");
@@ -111,7 +111,7 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
 
         if (Instant.now().isAfter(record.expiresAt())) {
             log.info("Verification code expired for email: {}", email);
-            verificationRepository.deleteByEmail(email);
+            emailConfirmationRepository.deleteByEmail(email);
             throw new Expired("Verification code has expired.");
         }
 
@@ -123,7 +123,7 @@ public class EmailConfirmationServiceImpl implements EmailConfirmationService {
     private void persistVerificationRecord(String email, String username, String password, String code,
             boolean verified,
             Instant expiresAt) {
-        verificationRepository.saveOrUpdate(email, username, password, code, verified, expiresAt);
+        emailConfirmationRepository.saveOrUpdate(email, username, password, code, verified, expiresAt);
     }
 
     private void sendVerificationCodeEmail(String email, String code) {
