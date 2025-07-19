@@ -44,7 +44,7 @@ public class EmailConfirmationRepositoryImpl implements EmailConfirmationReposit
      * @throws InternalServerError em caso de erro inesperado
      */
     @Override
-    public EmailConfirmationDomain saveOrUpdate(final String email, final String username, final String password,
+    public void saveOrUpdate(final String email, final String username, final String password,
             final String code, final boolean verified,
             final Instant expiresAt) {
         try {
@@ -63,9 +63,9 @@ public class EmailConfirmationRepositoryImpl implements EmailConfirmationReposit
                     .orElse(new EmailConfirmation(null, email, code, username, password, verified, expiresAt,
                             LocalDateTime.now()));
 
-            final EmailConfirmation saved = emailVerificationOrm.save(entity);
+            emailVerificationOrm.save(entity);
             log.info("EmailVerification saved/updated for email={}", email);
-            return EmailVerificationMapper.toDomain(saved);
+
         } catch (DataIntegrityViolationException e) {
             log.warn("Data integrity violation while saving email verification for email={}: {}", email,
                     e.getMessage());

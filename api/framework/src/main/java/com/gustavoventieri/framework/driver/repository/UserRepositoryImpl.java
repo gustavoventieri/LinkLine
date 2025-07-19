@@ -32,7 +32,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UserRepositoryImpl implements UserRepository {
 
-
     private final UserRepositoryOrm userRepositoryOrm;
 
     /**
@@ -40,7 +39,7 @@ public class UserRepositoryImpl implements UserRepository {
      *
      * @param email Email do usuário a ser buscado
      * @return Optional contendo o usuário, se encontrado
-     * @throws BadRequest se o email for inválido
+     * @throws BadRequest          se o email for inválido
      * @throws InternalServerError para erros internos inesperados
      */
     @Override
@@ -63,7 +62,7 @@ public class UserRepositoryImpl implements UserRepository {
      *
      * @param username Username do usuário a ser buscado
      * @return Optional contendo o usuário, se encontrado
-     * @throws BadRequest se o username for inválido
+     * @throws BadRequest          se o username for inválido
      * @throws InternalServerError para erros internos inesperados
      */
     @Override
@@ -86,7 +85,7 @@ public class UserRepositoryImpl implements UserRepository {
      *
      * @param userId UUID do usuário a ser buscado
      * @return Optional contendo o usuário, se encontrado
-     * @throws BadRequest se o ID for inválido
+     * @throws BadRequest          se o ID for inválido
      * @throws InternalServerError para erros internos inesperados
      */
     @Override
@@ -109,8 +108,8 @@ public class UserRepositoryImpl implements UserRepository {
      *
      * @param user Usuário a ser salvo
      * @return Usuário salvo convertido para UserDomain
-     * @throws Conflict se houver conflito de dados (ex: duplicidade)
-     * @throws InvalidData se os dados do usuário forem inválidos
+     * @throws Conflict            se houver conflito de dados (ex: duplicidade)
+     * @throws InvalidData         se os dados do usuário forem inválidos
      * @throws InternalServerError para erros internos inesperados
      */
     @Override
@@ -134,10 +133,11 @@ public class UserRepositoryImpl implements UserRepository {
     /**
      * Atualiza a senha do usuário identificado pelo email.
      *
-     * @param email Email do usuário
+     * @param email    Email do usuário
      * @param password Nova senha a ser definida
-     * @throws NotFound se o usuário com o email especificado não for encontrado
-     * @throws BadRequest se os dados fornecidos forem inválidos
+     * @throws NotFound            se o usuário com o email especificado não for
+     *                             encontrado
+     * @throws BadRequest          se os dados fornecidos forem inválidos
      * @throws InternalServerError para erros internos inesperados
      */
     @Override
@@ -158,17 +158,19 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     /**
-     * Busca usuários cujo username contenha o termo de busca e que não seja o usuário atual.
+     * Busca usuários cujo username contenha o termo de busca e que não seja o
+     * usuário atual.
      *
-     * @param searchTerm Termo para busca aproximada no username
+     * @param searchTerm    Termo para busca aproximada no username
      * @param currentUserId UUID do usuário atual (para excluir da busca)
      * @return Lista de usuários encontrados
-     * @throws BadRequest se o termo de busca for inválido
+     * @throws BadRequest          se o termo de busca for inválido
      * @throws InternalServerError para erros internos inesperados
      */
     @Override
     public List<UserDomain> searchByApproximateUsername(final String searchTerm, final UUID currentUserId) {
-        log.debug("Buscando usuários com username aproximado a '{}' excluindo usuário com ID: {}", searchTerm, currentUserId);
+        log.debug("Buscando usuários com username aproximado a '{}' excluindo usuário com ID: {}", searchTerm,
+                currentUserId);
         try {
             final List<User> users = userRepositoryOrm.findByUsernameContainingAndIdNot(searchTerm, currentUserId);
             return users.stream()

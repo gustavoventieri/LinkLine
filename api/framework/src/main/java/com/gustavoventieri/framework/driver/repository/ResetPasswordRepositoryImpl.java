@@ -36,26 +36,25 @@ public class ResetPasswordRepositoryImpl implements ResetPasswordRepository {
      * @param code      código de reset de senha
      * @param expiresAt data e hora de expiração do código
      * @return o domínio ResetPassword salvo/atualizado
-     * @throws BadRequest em caso de violação de integridade dos dados
+     * @throws BadRequest          em caso de violação de integridade dos dados
      * @throws InternalServerError em caso de erro inesperado
      */
     @Override
-    public ResetPasswordDomain saveOrUpdate(final String email, final String code, final Instant expiresAt) {
+    public void saveOrUpdate(final String email, final String code, final Instant expiresAt) {
         try {
             final Optional<ResetPassword> existing = resetPasswordOrm.findByEmail(email);
 
             final ResetPassword entity = existing
-                .map(rp -> {
-                    rp.setCode(code);
-                    rp.setExpiresAt(expiresAt);
-                    rp.setCreatedAt(LocalDateTime.now());
-                    return rp;
-                })
-                .orElse(new ResetPassword(null, email, code, expiresAt, LocalDateTime.now()));
+                    .map(rp -> {
+                        rp.setCode(code);
+                        rp.setExpiresAt(expiresAt);
+                        rp.setCreatedAt(LocalDateTime.now());
+                        return rp;
+                    })
+                    .orElse(new ResetPassword(null, email, code, expiresAt, LocalDateTime.now()));
 
-            final ResetPassword saved = resetPasswordOrm.save(entity);
+            resetPasswordOrm.save(entity);
             log.info("ResetPassword saved/updated for email={}", email);
-            return ResetPasswordMapper.toDomain(saved);
         } catch (DataIntegrityViolationException e) {
             log.warn("Data integrity violation while saving reset password for email={}: {}", email, e.getMessage());
             throw new BadRequest("Data integrity violation while saving reset password", e);
@@ -77,8 +76,8 @@ public class ResetPasswordRepositoryImpl implements ResetPasswordRepository {
     public Optional<ResetPasswordDomain> findByEmailAndCode(final String email, final String code) {
         try {
             return resetPasswordOrm
-                .findByEmailAndCode(email, code)
-                .map(ResetPasswordMapper::toDomain);
+                    .findByEmailAndCode(email, code)
+                    .map(ResetPasswordMapper::toDomain);
         } catch (Exception e) {
             log.error("Internal error while finding reset password by email={} and code={}", email, code, e);
             throw new InternalServerError("Internal error occurred while finding reset password by email and code", e);
@@ -96,8 +95,8 @@ public class ResetPasswordRepositoryImpl implements ResetPasswordRepository {
     public Optional<ResetPasswordDomain> findByEmail(final String email) {
         try {
             return resetPasswordOrm
-                .findByEmail(email)
-                .map(ResetPasswordMapper::toDomain);
+                    .findByEmail(email)
+                    .map(ResetPasswordMapper::toDomain);
         } catch (Exception e) {
             log.error("Internal error while finding reset password by email={}", email, e);
             throw new InternalServerError("Internal error occurred while finding reset password by email", e);

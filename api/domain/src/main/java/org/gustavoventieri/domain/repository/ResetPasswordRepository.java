@@ -7,7 +7,7 @@ import org.gustavoventieri.domain.entity.ResetPasswordDomain;
 
 public interface ResetPasswordRepository {
 
-    ResetPasswordDomain saveOrUpdate(String email, String code, Instant expiresAt);
+    void saveOrUpdate(String email, String code, Instant expiresAt);
 
     Optional<ResetPasswordDomain> findByEmailAndCode(String email, String code);
 

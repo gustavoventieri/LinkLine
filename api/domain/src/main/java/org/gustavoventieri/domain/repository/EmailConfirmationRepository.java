@@ -7,7 +7,7 @@ import org.gustavoventieri.domain.entity.EmailConfirmationDomain;
 
 public interface EmailConfirmationRepository {
 
-    EmailConfirmationDomain saveOrUpdate(String email, String username, String password, String code, boolean verified, Instant expiresAt);
+    void saveOrUpdate(String email, String username, String password, String code, boolean verified, Instant expiresAt);
 
     Optional<EmailConfirmationDomain> findByEmailAndCode(String email, String code);
 

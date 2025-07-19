@@ -8,6 +8,7 @@ import org.gustavoventieri.domain.entity.FriendshipDomain;
 import org.gustavoventieri.domain.enums.RequestStatus;
 import org.gustavoventieri.domain.exception.Conflict;
 import org.gustavoventieri.domain.exception.InternalServerError;
+import org.gustavoventieri.domain.exception.NotFound;
 import org.gustavoventieri.domain.repository.FriendshipRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
@@ -27,11 +28,10 @@ public class FriendshipRepositoryImpl implements FriendshipRepository {
     private final FriendshipOrm friendshipOrm;
 
     @Override
-    public FriendshipDomain save(final FriendshipDomain friendshipDomain) {
+    public void save(final FriendshipDomain friendshipDomain) {
         log.debug("Salvando amizade: {}", friendshipDomain);
         try {
-            final Friendship friendshipSaved = friendshipOrm.save(FriendshipMapper.toEntityComplete(friendshipDomain));
-            return FriendshipMapper.toDomainBasic(friendshipSaved);
+            friendshipOrm.save(FriendshipMapper.toEntityComplete(friendshipDomain));
         } catch (DataIntegrityViolationException e) {
             log.error("Conflito ao salvar amizade: {}", friendshipDomain, e);
             throw new Conflict("Conflict detected while saving user", e);
@@ -42,9 +42,23 @@ public class FriendshipRepositoryImpl implements FriendshipRepository {
     }
 
     @Override
-    public Optional<FriendshipDomain> updateStatus(UUID requestId, RequestStatus status) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'updateStatus'");
+    public void updateStatus(final UUID requestId, final RequestStatus status) {
+        try {
+            log.debug("Verificando existência da amizade {}", requestId);
+
+            final Friendship friendship = friendshipOrm.findById(requestId)
+                    .orElseThrow(() -> new NotFound("Amizade não encontrada"));
+
+            friendship.setStatus(status);
+
+            friendshipOrm.save(friendship);
+
+            log.info("Status da amizade com ID {} atualizado para {}", requestId, status);
+
+        } catch (final Exception e) {
+            log.error("Erro interno ao atualizar o status da amizade {}", requestId, e);
+            throw new InternalServerError("Internal error occurred while updating friendship status", e);
+        }
     }
 
     @Override

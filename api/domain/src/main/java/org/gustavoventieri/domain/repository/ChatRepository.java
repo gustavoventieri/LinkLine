@@ -12,7 +12,7 @@ public interface ChatRepository {
 
     List<ChatDomain> findAllByUserId(UUID userId);
 
-    ChatDomain create(UUID currentUserId, UUID targetUserId);
+    void save(UUID currentUserId, UUID targetUserId);
 
     void deleteMessagesByChatId(UUID chatId);
 

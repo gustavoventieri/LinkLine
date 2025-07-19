@@ -11,9 +11,9 @@ public interface FriendshipRepository {
 
     List<FriendshipDomain> getAllByUserId(UUID userId);
 
-    FriendshipDomain save(FriendshipDomain friendshipDomain);
+    void save(FriendshipDomain friendshipDomain);
 
-    Optional<FriendshipDomain> updateStatus(UUID requestId, RequestStatus status);
+    void updateStatus(UUID requestId, RequestStatus status);
 
     Optional<FriendshipDomain> deleteById(UUID requestId);
 

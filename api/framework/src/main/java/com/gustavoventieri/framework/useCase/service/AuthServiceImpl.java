@@ -126,7 +126,7 @@ public class AuthServiceImpl implements AuthService {
         try {
             emailService.sendAccountCreatedMessage(user.email(), user.username());
             log.info("Confirmation email sent to: {}", user.email());
-        } catch(MessagingException e) {
+        } catch (MessagingException e) {
             log.error("Failed to send confirmation email to: {}", user.email(), e);
             throw new InternalServerError("Failed to send confirmation email", e);
         }
