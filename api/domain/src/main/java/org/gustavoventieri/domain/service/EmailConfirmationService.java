@@ -2,7 +2,7 @@ package org.gustavoventieri.domain.service;
 
 public interface EmailConfirmationService {
 
-    void initiateConfirmation(String email, String username, String password);
+    void initiateConfirmationEmail(String email, String username, String password);
 
     void resendConfirmationCode(String email);
 
