@@ -9,6 +9,7 @@ import org.gustavoventieri.domain.enums.RequestStatus;
 import org.gustavoventieri.domain.exception.Conflict;
 import org.gustavoventieri.domain.exception.InternalServerError;
 import org.gustavoventieri.domain.exception.InvalidData;
+import org.gustavoventieri.domain.exception.NotFound;
 import org.gustavoventieri.domain.repository.FriendshipRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
@@ -28,12 +29,6 @@ public class FriendshipRepositoryImpl implements FriendshipRepository {
     private final FriendshipOrm friendshipOrm;
 
     @Override
-    public List<FriendshipDomain> getFriendShipByStatus(UUID userId, RequestStatus status, boolean sent) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getChatRequestsByStatus'");
-    }
-
-    @Override
     public FriendshipDomain save(final FriendshipDomain friendshipDomain) {
         log.debug("Salvando amizade: {}", friendshipDomain);
         try {
@@ -42,9 +37,6 @@ public class FriendshipRepositoryImpl implements FriendshipRepository {
         } catch (DataIntegrityViolationException e) {
             log.error("Conflito ao salvar amizade: {}", friendshipDomain, e);
             throw new Conflict("Conflict detected while saving user", e);
-        } catch (IllegalArgumentException e) {
-            log.error("Dados inválidos para salvar amizade: {}", friendshipDomain, e);
-            throw new InvalidData("Invalid data provided for saving user", e);
         } catch (Exception e) {
             log.error("Erro interno ao salvar amizade: {}", friendshipDomain, e);
             throw new InternalServerError("Internal error occurred while saving user", e);
@@ -65,27 +57,47 @@ public class FriendshipRepositoryImpl implements FriendshipRepository {
 
     @Override
     public Optional<FriendshipDomain> findById(UUID requestId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findById'");
-    }
+        try {
+            log.debug("Verificando existência da amizade  {}", requestId);
 
-    @Override
-    public Optional<FriendshipDomain> findExisting(UUID userId, UUID friendId) {
-        log.debug("Verificando existência de amizade entre {} e {}", userId, friendId);
+            Optional<Friendship> friendship = friendshipOrm.findById(requestId);
 
-        Optional<Friendship> friendship = friendshipOrm.findByUser_IdAndFriend_Id(userId, friendId);
+            return friendship.map(FriendshipMapper::toDomainBasic);
 
-        if (friendship.isEmpty()) {
-            friendship = friendshipOrm.findByUser_IdAndFriend_Id(friendId, userId);
+        } catch (Exception e) {
+            log.error("Erro interno ao buscar a existência de amizade  {}", requestId, e);
+            throw new InternalServerError("Internal error occurred while fetching friendship", e);
         }
-
-        return friendship.map(FriendshipMapper::toDomainBasic);
     }
 
     @Override
-    public Optional<FriendshipDomain> findAcceptedBetweenUsers(UUID userId, UUID friendId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findAcceptedBetweenUsers'");
+    public Optional<FriendshipDomain> findExisting(UUID userId1, UUID userId2, List<RequestStatus> statuses) {
+        try {
+            log.debug("Verificando existência de amizade entre {} e {}", userId1, userId2);
+
+            Optional<Friendship> friendship = friendshipOrm.findByUsersAndStatuses(userId1, userId2, statuses);
+
+            return friendship.map(FriendshipMapper::toDomainBasic);
+
+        } catch (Exception e) {
+            log.error("Erro interno ao buscar amizade entre: {} {}", userId1, userId2, e);
+            throw new InternalServerError("Internal error occurred while fetching friendship", e);
+        }
+    }
+
+    @Override
+    public List<FriendshipDomain> getAllByUserId(UUID userId) {
+        try {
+            log.debug("Buscando amizades e solicitações do user: {}", userId);
+            List<Friendship> friendships = friendshipOrm.findAllByUser_IdOrFriend_IdOrderByCreatedAtDesc(userId,
+                    userId);
+            return friendships.stream()
+                    .map(FriendshipMapper::toDomainComplete)
+                    .toList();
+        } catch (Exception e) {
+            log.error("Erro interno ao buscar amizades do user: {}", userId, e);
+            throw new InternalServerError("Internal error occurred while finding friendships", e);
+        }
     }
 
 }

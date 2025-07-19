@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.gustavoventieri.domain.entity.EmailConfirmationDomain;
 import org.gustavoventieri.domain.exception.BadRequest;
 import org.gustavoventieri.domain.exception.InternalServerError;
-import org.gustavoventieri.domain.repository.EmailVerificationRepository;
+import org.gustavoventieri.domain.repository.EmailConfirmationRepository;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Repository
 @Slf4j
-public class EmailConfirmationRepositoryImpl implements EmailVerificationRepository {
+public class EmailConfirmationRepositoryImpl implements EmailConfirmationRepository {
 
     private final EmailConfirmationOrm emailVerificationOrm;
 

@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.gustavoventieri.domain.entity.UserDomain;
+import org.gustavoventieri.domain.utils.JWTUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.gustavoventieri.framework.driver.repository.UserRepositoryImpl;
-import com.gustavoventieri.framework.useCase.utils.JWTUtils;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

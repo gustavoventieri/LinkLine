@@ -1,15 +1,17 @@
 package org.gustavoventieri.domain.service;
 
-import java.util.Map;
+import java.util.List;
 import java.util.UUID;
+
+import org.gustavoventieri.domain.dto.response.GetAllFriendships;
 
 public interface FriendshipService {
 
     void createFriendship(UUID userId, String friendUsername);
 
-    void updateFriendship(UUID chatRequestId, String newStatus);
+    void updateFriendship(UUID friendshipId, String newStatus);
 
     void deleteFriendship(UUID userId, UUID friendId);
 
-    Map<String, Object> getFriendshipsByStatus(String type, String status, UUID userId);
+    List<GetAllFriendships> getAllByUserId(UUID userId);
 }

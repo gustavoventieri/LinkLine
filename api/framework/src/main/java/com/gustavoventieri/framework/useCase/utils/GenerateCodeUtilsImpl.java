@@ -2,7 +2,6 @@ package com.gustavoventieri.framework.useCase.utils;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
@@ -12,14 +11,14 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Service
 @Slf4j
-public class GenerateCodeUtils {
+public class GenerateCodeUtilsImpl {
 
     /**
      * Gera um código numérico aleatório de 6 dígitos.
      *
      * @return código gerado como String
      */
-    public static String generateCode() {
+    public String generateCode() {
         int code = ThreadLocalRandom.current().nextInt(100000, 1000000);
         String codeStr = String.valueOf(code);
         log.debug("Código gerado: {}", codeStr);

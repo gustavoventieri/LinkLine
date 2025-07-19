@@ -9,7 +9,7 @@ import org.gustavoventieri.domain.enums.RequestStatus;
 
 public interface FriendshipRepository {
 
-    List<FriendshipDomain> getFriendShipByStatus(UUID userId, RequestStatus status, boolean sent);
+    List<FriendshipDomain> getAllByUserId(UUID userId);
 
     FriendshipDomain save(FriendshipDomain friendshipDomain);
 
@@ -19,7 +19,6 @@ public interface FriendshipRepository {
 
     Optional<FriendshipDomain> findById(UUID requestId);
 
-    Optional<FriendshipDomain> findExisting(UUID userId, UUID friendId);
+    Optional<FriendshipDomain> findExisting(UUID userId1, UUID userId2, List<RequestStatus> statuses);
 
-    Optional<FriendshipDomain> findAcceptedBetweenUsers(UUID userId, UUID friendId);
 }

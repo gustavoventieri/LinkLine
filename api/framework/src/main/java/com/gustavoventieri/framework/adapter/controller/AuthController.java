@@ -3,6 +3,8 @@ package com.gustavoventieri.framework.adapter.controller;
 import java.util.Map;
 import java.util.UUID;
 
+import org.gustavoventieri.domain.service.AuthService;
+import org.gustavoventieri.domain.utils.JWTUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,8 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.gustavoventieri.framework.adapter.dto.request.auth.LoginRequestImpl;
 import com.gustavoventieri.framework.adapter.dto.request.auth.RegisterRequestImpl;
-import com.gustavoventieri.framework.useCase.service.AuthServiceImpl;
-import com.gustavoventieri.framework.useCase.utils.JWTUtils;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthController {
 
-    private final AuthServiceImpl authServiceImpl;
+    private final AuthService authService;
     private final JWTUtils jwtUtils;
 
     /**
@@ -51,7 +51,7 @@ public class AuthController {
             HttpServletResponse response) {
         log.info("Login attempt for email: {}", loginRequestImpl.email());
 
-        String token = authServiceImpl.login(loginRequestImpl.email(), loginRequestImpl.password());
+        String token = authService.login(loginRequestImpl.email(), loginRequestImpl.password());
 
         setTokenCookie(response, token);
 
@@ -73,7 +73,7 @@ public class AuthController {
         UUID userId = jwtUtils.getUserIdFromCookie(httpRequest);
         log.info("Checking authentication for user ID: {}", userId);
 
-        Map<String, Object> response = authServiceImpl.isAuth(userId); // throws exception if not found or invalid
+        Map<String, Object> response = authService.isAuth(userId); // throws exception if not found or invalid
 
         log.info("User is authenticated. ID: {}", userId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -95,7 +95,7 @@ public class AuthController {
             HttpServletResponse response) {
         log.info("Registration attempt for email: {}", registerRequestImpl.email());
 
-        String token = authServiceImpl.register(
+        String token = authService.register(
                 registerRequestImpl.email(),
                 registerRequestImpl.code(),
                 registerRequestImpl.avatarUrl());

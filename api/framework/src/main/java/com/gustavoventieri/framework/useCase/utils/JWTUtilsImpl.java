@@ -5,8 +5,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.UUID;
 
+import org.gustavoventieri.domain.entity.UserDomain;
 import org.gustavoventieri.domain.exception.JWTException;
-
+import org.gustavoventieri.domain.utils.JWTUtils;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,6 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.gustavoventieri.framework.entity.User;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Component
 @Slf4j
-public class JWTUtils {
+public class JWTUtilsImpl implements JWTUtils {
 
     private static final String TOKEN_COOKIE_NAME = "token";
 
@@ -36,17 +36,17 @@ public class JWTUtils {
     private final long EXPIRATION_HOURS;
 
     /**
-     * Construtor que inicializa a chave secreta, emissor e tempo de expiração do token.
+     * Construtor que inicializa a chave secreta, emissor e tempo de expiração do
+     * token.
      *
      * @param jwtSecret       segredo usado na assinatura HMAC256 do token
      * @param issuer          emissor do token JWT
      * @param expirationHours validade do token em horas
      */
-    public JWTUtils(
-        @Value("${spring.security.jwt.password}") String jwtSecret,
-        @Value("${spring.security.jwt.issuer}") String issuer,
-        @Value("${spring.security.jwt.expiration-hours}") long expirationHours
-    ) {
+    public JWTUtilsImpl(
+            @Value("${spring.security.jwt.password}") String jwtSecret,
+            @Value("${spring.security.jwt.issuer}") String issuer,
+            @Value("${spring.security.jwt.expiration-hours}") long expirationHours) {
         this.algorithm = Algorithm.HMAC256(jwtSecret);
         this.ISSUER = issuer;
         this.EXPIRATION_HOURS = expirationHours;
@@ -60,17 +60,18 @@ public class JWTUtils {
      * @return token JWT assinado como String
      * @throws JWTException em caso de falha na criação do token
      */
-    public String generateUserToken(User user) {
+    @Override
+    public String generateUserToken(UserDomain user) {
         try {
             String token = JWT.create()
-                .withIssuer(this.ISSUER)
-                .withSubject(user.getId().toString())
-                .withExpiresAt(this.generateExpirationDate())
-                .sign(this.algorithm);
-            log.debug("Token JWT gerado para usuário {}", user.getId());
+                    .withIssuer(this.ISSUER)
+                    .withSubject(user.id().toString())
+                    .withExpiresAt(this.generateExpirationDate())
+                    .sign(this.algorithm);
+            log.debug("Token JWT gerado para usuário {}", user.id());
             return token;
         } catch (JWTCreationException e) {
-            log.error("Erro ao gerar token JWT para usuário {}", user.getId(), e);
+            log.error("Erro ao gerar token JWT para usuário {}", user.id(), e);
             throw new JWTException("Error while generating JWT token");
         }
     }
@@ -81,13 +82,14 @@ public class JWTUtils {
      * @param token token JWT a ser validado
      * @return ID do usuário como String se válido; null se inválido ou expirado
      */
+    @Override
     public String validateAndExtractUserId(String token) {
         try {
             String userId = JWT.require(this.algorithm)
-                .withIssuer(this.ISSUER)
-                .build()
-                .verify(token)
-                .getSubject();
+                    .withIssuer(this.ISSUER)
+                    .build()
+                    .verify(token)
+                    .getSubject();
             log.debug("Token JWT validado com sucesso para usuário {}", userId);
             return userId;
         } catch (JWTVerificationException e) {
@@ -97,12 +99,14 @@ public class JWTUtils {
     }
 
     /**
-     * Recupera o ID do usuário a partir do cookie "token" presente na requisição HTTP.
+     * Recupera o ID do usuário a partir do cookie "token" presente na requisição
+     * HTTP.
      *
      * @param request requisição HTTP contendo o cookie JWT
      * @return UUID do usuário extraído do token
      * @throws JWTException se não encontrar cookie, token inválido ou expirado
      */
+    @Override
     public UUID getUserIdFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
@@ -130,13 +134,14 @@ public class JWTUtils {
     }
 
     /**
-     * Gera a data/hora de expiração do token com base na hora atual mais o tempo configurado.
+     * Gera a data/hora de expiração do token com base na hora atual mais o tempo
+     * configurado.
      *
      * @return instante de expiração do token
      */
     private Instant generateExpirationDate() {
         return LocalDateTime.now()
-            .plusHours(this.EXPIRATION_HOURS)
-            .toInstant(ZoneOffset.of("-03:00"));
+                .plusHours(this.EXPIRATION_HOURS)
+                .toInstant(ZoneOffset.of("-03:00"));
     }
 }

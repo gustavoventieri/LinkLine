@@ -9,22 +9,23 @@ import java.util.UUID;
 import org.gustavoventieri.domain.entity.EmailConfirmationDomain;
 import org.gustavoventieri.domain.entity.UserDomain;
 import org.gustavoventieri.domain.exception.InternalServerError;
-import org.gustavoventieri.domain.exception.InvalidData;
 import org.gustavoventieri.domain.exception.NotFound;
 import org.gustavoventieri.domain.exception.Unauthorized;
+import org.gustavoventieri.domain.repository.EmailConfirmationRepository;
+import org.gustavoventieri.domain.repository.UserRepository;
 import org.gustavoventieri.domain.service.AuthService;
+import org.gustavoventieri.domain.service.EmailService;
+import org.gustavoventieri.domain.utils.JWTUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.gustavoventieri.framework.adapter.mapper.UserMapper;
-import com.gustavoventieri.framework.driver.repository.EmailConfirmationRepositoryImpl;
-import com.gustavoventieri.framework.driver.repository.UserRepositoryImpl;
 import com.gustavoventieri.framework.entity.User;
-import com.gustavoventieri.framework.useCase.utils.EmailUtils;
-import com.gustavoventieri.framework.useCase.utils.JWTUtils;
 
 import jakarta.mail.MessagingException;
+
 import org.springframework.transaction.annotation.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,78 +39,54 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthServiceImpl implements AuthService {
 
-    private final EmailConfirmationRepositoryImpl verificationRepositoryImpl;
-    private final UserRepositoryImpl userRepositoryImpl;
-    private final PasswordEncoder passwordEncoder;
-    private final EmailUtils emaiUtils;
+    // Dependency Inversion Principle
+    private final EmailConfirmationRepository emailConfirmationRepository;
+    private final UserRepository userRepository;
+    private final EmailService emailService;
     private final JWTUtils jwtUtils;
+    
+    private final PasswordEncoder passwordEncoder;
 
-    /**
-     * Realiza o login do usuário autenticando email e senha.
-     *
-     * @param email    o email do usuário
-     * @param password a senha fornecida
-     * @return token JWT para acesso autorizado
-     * @throws NotFound            se o usuário não for encontrado
-     * @throws InvalidData         se a senha estiver incorreta
-     * @throws InternalServerError se o token JWT não puder ser gerado corretamente
-     */
     @Override
     public String login(String email, String password) {
         log.info("Attempting login for email: {}", email);
 
-        UserDomain user = this.userRepositoryImpl.findByEmail(email)
+        UserDomain record = this.userRepository.findByEmail(email)
                 .orElseThrow(() -> {
                     log.warn("User not found for email: {}", email);
-                    return new NotFound("User not found");
+                    return new NotFound("Invalid credentials");
                 });
 
-        boolean passwordMatched = passwordEncoder.matches(password, user.password());
+        boolean passwordMatched = passwordEncoder.matches(password, record.password());
 
         if (!passwordMatched) {
             log.warn("Invalid password attempt for user: {}", email);
             throw new NotFound("Invalid credentials");
         }
 
-        String token = jwtUtils.generateUserToken(UserMapper.toEntityBasic(user));
-
-        if (token == null || token.isBlank()) {
-            log.error("Failed to generate JWT token for user: {}", email);
-            throw new InternalServerError("Invalid token");
-        }
+        String token = generateToken(record);
 
         log.info("Login successful for email: {}", email);
         return token;
     }
 
-    /**
-     * Registra um novo usuário após validar o código de verificação enviado por
-     * email.
-     *
-     * @param email     o email do usuário
-     * @param code      o código de verificação recebido
-     * @param avatarUrl URL do avatar do usuário
-     * @return token JWT para acesso autorizado após registro
-     * @throws Unauthorized        se o código de verificação for inválido
-     * @throws InternalServerError se o envio do email de confirmação falhar
-     */
     @Override
     @Transactional
     public String register(String email, String code, String avatarUrl) {
         log.info("Starting registration for email: {}", email);
 
-        EmailConfirmationDomain emailVerificationRecord = verificationRepositoryImpl.findByEmailAndCode(email, code)
+        EmailConfirmationDomain record = emailConfirmationRepository.findByEmailAndCode(email, code)
                 .filter(EmailConfirmationDomain::verified)
                 .orElseThrow(() -> {
                     log.warn("Invalid verification attempt. Email: {}, Code: {}", email, code);
                     return new Unauthorized("Invalid verification code or email.");
                 });
 
-        User newUser = new User(
+        User user = new User(
                 null,
-                emailVerificationRecord.username(),
-                emailVerificationRecord.email(),
-                emailVerificationRecord.password(),
+                record.username(),
+                record.email(),
+                record.password(),
                 avatarUrl,
                 LocalDateTime.now(),
                 LocalDateTime.now(),
@@ -117,29 +94,20 @@ public class AuthServiceImpl implements AuthService {
                 new HashSet<>(),
                 new HashSet<>(),
                 new HashSet<>(),
-                new HashSet<>()
+                new HashSet<>());
 
-        );
+        UserDomain savedUser = userRepository.save(UserMapper.toDomainComplete(user));
+        sendConfirmationEmailOrThrow(savedUser);
+        emailConfirmationRepository.deleteByEmail(email);
 
-        UserDomain savedUser = userRepositoryImpl.save(UserMapper.toDomainComplete(newUser));
-        verificationRepositoryImpl.deleteByEmail(email);
-
-        try {
-            emaiUtils.sendAccountCreatedMessage(savedUser.email(), savedUser.username());
-            log.info("Confirmation email sent to: {}", savedUser.email());
-        } catch (MessagingException e) {
-            log.error("Failed to send confirmation email to: {}", savedUser.email(), e);
-            throw new InternalServerError("Failed to send confirmation email", e);
-        }
-
-        String token = jwtUtils.generateUserToken(UserMapper.toEntityBasic(savedUser));
+        String token = generateToken(savedUser);
         log.info("Registration successful for email: {}", email);
         return token;
     }
 
     @Override
     public Map<String, Object> isAuth(UUID userId) {
-        userRepositoryImpl.findById(userId)
+        userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("User not found or not authenticated. userId: {}", userId);
                     return new Unauthorized("User not authenticated");
@@ -152,4 +120,21 @@ public class AuthServiceImpl implements AuthService {
         return response;
     }
 
+    private void sendConfirmationEmailOrThrow(UserDomain user) {
+        try {
+            emailService.sendAccountCreatedMessage(user.email(), user.username());
+            log.info("Confirmation email sent to: {}", user.email());
+        } catch (MessagingException e) {
+            log.error("Failed to send confirmation email to: {}", user.email(), e);
+            throw new InternalServerError("Failed to send confirmation email", e);
+        }
+    }
+
+    private String generateToken(UserDomain user) {
+        String token = jwtUtils.generateUserToken(user);
+        if (token == null || token.isBlank()) {
+            throw new InternalServerError("Invalid token");
+        }
+        return token;
+    }
 }

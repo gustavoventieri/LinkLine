@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import org.gustavoventieri.domain.entity.EmailConfirmationDomain;
 
-public interface EmailVerificationRepository {
+public interface EmailConfirmationRepository {
 
     EmailConfirmationDomain saveOrUpdate(String email, String username, String password, String code, boolean verified, Instant expiresAt);
 

@@ -8,19 +8,18 @@ import org.gustavoventieri.domain.exception.Conflict;
 import org.gustavoventieri.domain.exception.Expired;
 import org.gustavoventieri.domain.exception.InternalServerError;
 import org.gustavoventieri.domain.exception.NotFound;
-import org.gustavoventieri.domain.service.EmailVerificationService;
+import org.gustavoventieri.domain.repository.EmailConfirmationRepository;
+import org.gustavoventieri.domain.repository.UserRepository;
+import org.gustavoventieri.domain.service.EmailConfirmationService;
+import org.gustavoventieri.domain.service.EmailService;
+import org.gustavoventieri.domain.utils.GenerateCodeUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.gustavoventieri.framework.adapter.mapper.EmailVerificationMapper;
-import com.gustavoventieri.framework.driver.repository.EmailConfirmationRepositoryImpl;
-import com.gustavoventieri.framework.driver.repository.UserRepositoryImpl;
-import com.gustavoventieri.framework.entity.EmailConfirmation;
-import com.gustavoventieri.framework.useCase.utils.EmailUtils;
-import com.gustavoventieri.framework.useCase.utils.GenerateCodeUtils;
-
 import jakarta.mail.MessagingException;
+
 import org.springframework.transaction.annotation.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,105 +31,107 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class EmailConfirmationServiceImpl implements EmailVerificationService {
+public class EmailConfirmationServiceImpl implements EmailConfirmationService {
 
-    
+    // Dependency Inversion Principle
+    private final EmailConfirmationRepository verificationRepository;
+    private final UserRepository userRepository;
+    private final GenerateCodeUtils generateCodeUtils;
+    private final EmailService emailService;
 
-    private final EmailConfirmationRepositoryImpl verificationRepositoryImpl;
-    private final UserRepositoryImpl userRepositoryImpl;
-    private final EmailUtils emailUtils;
-    private final PasswordEncoder encryptionUtils;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
-    public void sendConfirmationEmailCode(String email, String username, String password) {
-        log.info("Starting sendConfirmationEmailCode for email: {} and username: {}", email, username);
-        try {
-            if (userRepositoryImpl.findByUsername(username).isPresent()) {
-                log.warn("Username '{}' is already taken.", username);
-                throw new Conflict("This username is not available.");
-            }
+    public void initiateConfirmation(String email, String username, String password) {
+        log.info("Starting initiateEmailVerification for email: {} and username: {}", email, username);
 
-            if (userRepositoryImpl.findByEmail(email).isPresent()) {
-                log.warn("Email '{}' is already taken.", email);
-                throw new Conflict("This email is not available.");
-            }
+        userRepository.findByUsername(username)
+                .ifPresent(usernameIsNotAvailable -> {
+                    log.warn("Username '{}' is already taken.", username);
+                    throw new Conflict("This username is not available.");
+                });
 
-            String code = GenerateCodeUtils.generateCode();
+        userRepository.findByEmail(email)
+                .ifPresent(emailIsNotAvailable -> {
+                    log.warn("Email '{}' is already taken.", email);
+                    throw new Conflict("This email is not available.");
+                });
 
-            String hashedPassword = encryptionUtils.encode(password);
+        String verificationCode = generateCodeUtils.generateCode();
+        String hashedPassword = passwordEncoder.encode(password);
+        Instant expiresAt = Instant.now().plus(10, ChronoUnit.MINUTES);
 
-            Instant expiresAt = Instant.now().plus(10, ChronoUnit.MINUTES);
+        persistVerificationRecord(email, username, hashedPassword, verificationCode, false, expiresAt);
+        sendVerificationCodeEmail(email, verificationCode);
 
-            verificationRepositoryImpl.saveOrUpdate(email, username, hashedPassword, code, false, expiresAt);
+        log.info("Verification code sent successfully to {}", email);
 
-            emailUtils.sendConfirmationCode(email, code);
-
-            log.info("Confirmation email code sent successfully to {}", email);
-
-        } catch (MessagingException e) {
-            log.error("Failed to send confirmation email to {}: {}", email, e.getMessage(), e);
-            throw new InternalServerError("Failed to send confirmation email", e);
-        }
     }
 
     @Override
     @Transactional
-    public void resendConfirmationEmailCode(String email) {
-        log.info("Starting resendConfirmationEmailCode for email: {}", email);
-        try {
-            EmailConfirmationDomain emailVerificationRecord = verificationRepositoryImpl.findByEmail(email)
+    public void resendConfirmationCode(String email) {
+        log.info("Starting resendVerificationCode for email: {}", email);
+
+        EmailConfirmationDomain record = verificationRepository.findByEmail(email)
                 .orElseThrow(() -> {
                     log.warn("No verification record found for email: {}", email);
                     return new NotFound("Email not found for verification.");
                 });
 
-            String newCode = GenerateCodeUtils.generateCode();
+        String newVerificationCode = generateCodeUtils.generateCode();
 
-            Instant expiresAt = Instant.now().plus(10, ChronoUnit.MINUTES);
+        Instant expiresAt = Instant.now().plus(10, ChronoUnit.MINUTES);
 
-            EmailConfirmation entity = EmailVerificationMapper.toEntity(emailVerificationRecord);
-
-            verificationRepositoryImpl.saveOrUpdate(
-                entity.getEmail(),
-                entity.getUsername(),
-                entity.getPassword(),
-                newCode,
+        persistVerificationRecord(
+                record.email(),
+                record.username(),
+                record.password(),
+                newVerificationCode,
                 false,
-                expiresAt
-            );
+                expiresAt);
 
-            emailUtils.sendConfirmationCode(email, newCode);
+        sendVerificationCodeEmail(email, newVerificationCode);
 
-            log.info("Resent confirmation email code to {}", email);
+        log.info("Resent verification code to {}", email);
 
-
-        } catch (MessagingException e) {
-            log.error("Failed to resend confirmation email to {}: {}", email, e.getMessage(), e);
-            throw new InternalServerError("Failed to resend confirmation email", e);
-        }
     }
 
     @Override
     @Transactional
-    public void verifyConfirmationEmailCode(String email, String code) {
-        log.info("Verifying confirmation email code for email: {}", email);
+    public void validateConfirmationCode(String email, String code) {
+        log.info("Validating verification code for email: {}", email);
 
-        EmailConfirmationDomain emailVerificationDomain = verificationRepositoryImpl.findByEmailAndCode(email, code)
-            .orElseThrow(() -> {
-                log.warn("Invalid verification code or email. Email: {}, Code: {}", email, code);
-                return new NotFound("Invalid verification code or email.");
-            });
+        EmailConfirmationDomain record = verificationRepository.findByEmailAndCode(email, code)
+                .orElseThrow(() -> {
+                    log.warn("Invalid verification code or email. Email: {}, Code: {}", email, code);
+                    return new NotFound("Invalid verification code or email.");
+                });
 
-        if (Instant.now().isAfter(emailVerificationDomain.expiresAt())) {
+        if (Instant.now().isAfter(record.expiresAt())) {
             log.info("Verification code expired for email: {}", email);
-            verificationRepositoryImpl.deleteByEmail(email);
+            verificationRepository.deleteByEmail(email);
             throw new Expired("Verification code has expired.");
         }
 
-        verificationRepositoryImpl.saveOrUpdate(email, emailVerificationDomain.username(), emailVerificationDomain.password(), code, true, emailVerificationDomain.expiresAt());
-
+        persistVerificationRecord(email, record.username(), record.password(), code, true, record.expiresAt());
 
         log.info("Verification code validated successfully for email: {}", email);
+    }
+
+    private void persistVerificationRecord(String email, String username, String password, String code,
+            boolean verified,
+            Instant expiresAt) {
+        verificationRepository.saveOrUpdate(email, username, password, code, verified, expiresAt);
+    }
+
+    private void sendVerificationCodeEmail(String email, String code) {
+        try {
+            emailService.sendConfirmationCode(email, code);
+        } catch (MessagingException e) {
+            log.error("Failed to send verification email to {}: {}", email, e.getMessage(), e);
+            throw new InternalServerError("Failed to send verification email", e);
+        }
     }
 }

@@ -8,18 +8,18 @@ import org.gustavoventieri.domain.entity.UserDomain;
 import org.gustavoventieri.domain.exception.Expired;
 import org.gustavoventieri.domain.exception.InternalServerError;
 import org.gustavoventieri.domain.exception.NotFound;
+import org.gustavoventieri.domain.repository.ResetPasswordRepository;
+import org.gustavoventieri.domain.repository.UserRepository;
+import org.gustavoventieri.domain.service.EmailService;
 import org.gustavoventieri.domain.service.ResetPasswordService;
+import org.gustavoventieri.domain.utils.GenerateCodeUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-
-import com.gustavoventieri.framework.driver.repository.ResetPasswordRepositoryImpl;
-import com.gustavoventieri.framework.driver.repository.UserRepositoryImpl;
-import com.gustavoventieri.framework.useCase.utils.EmailUtils;
-import com.gustavoventieri.framework.useCase.utils.GenerateCodeUtils;
-
 import jakarta.mail.MessagingException;
+
 import org.springframework.transaction.annotation.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,9 +35,12 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
 
     private static final int RESET_CODE_EXPIRATION_MINUTES = 10;
 
-    private final ResetPasswordRepositoryImpl resetPasswordRepositoryImpl;
-    private final UserRepositoryImpl userRepositoryImpl;
-    private final EmailUtils emailUtils;
+    // Dependency Inversion Principle
+    private final ResetPasswordRepository resetPasswordRepository;
+    private final UserRepository userRepository;
+    private final EmailService emailService;
+    private final GenerateCodeUtils generateCodeUtils;
+
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -46,22 +49,23 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
      *
      * @param email O e-mail do usuário que solicitou a redefinição de senha.
      * @return O código gerado para redefinição.
-     * @throws NotFound Se o usuário com o e-mail informado não for encontrado.
+     * @throws NotFound            Se o usuário com o e-mail informado não for
+     *                             encontrado.
      * @throws InternalServerError Se ocorrer erro ao enviar o e-mail.
      */
     @Override
     @Transactional
     public String sendResetPasswordCode(String email) {
         try {
-            userRepositoryImpl.findByEmail(email)
-                .orElseThrow(() -> new NotFound("User with this email was not found."));
+            userRepository.findByEmail(email)
+                    .orElseThrow(() -> new NotFound("User with this email was not found."));
 
-            String code = GenerateCodeUtils.generateCode();
+            String code = generateCodeUtils.generateCode();
             Instant expiresAt = Instant.now().plus(RESET_CODE_EXPIRATION_MINUTES, ChronoUnit.MINUTES);
 
-            resetPasswordRepositoryImpl.saveOrUpdate(email, code, expiresAt);
+            resetPasswordRepository.saveOrUpdate(email, code, expiresAt);
 
-            emailUtils.sendResetPasswordCode(email, code);
+            emailService.sendResetPasswordCode(email, code);
             log.info("Reset password code sent to {}", email);
 
             return code;
@@ -77,22 +81,23 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
      *
      * @param email O e-mail do usuário para o qual será enviado o novo código.
      * @return O novo código gerado para redefinição.
-     * @throws NotFound Se não existir um pedido de redefinição para o e-mail informado.
+     * @throws NotFound            Se não existir um pedido de redefinição para o
+     *                             e-mail informado.
      * @throws InternalServerError Se ocorrer erro ao enviar o e-mail.
      */
     @Override
     @Transactional
     public String resendResetPasswordCode(String email) {
         try {
-            resetPasswordRepositoryImpl.findByEmail(email)
-                .orElseThrow(() -> new NotFound("Reset password request not found."));
+            resetPasswordRepository.findByEmail(email)
+                    .orElseThrow(() -> new NotFound("Reset password request not found."));
 
-            String newCode = GenerateCodeUtils.generateCode();
+            String newCode = generateCodeUtils.generateCode();
             Instant expiresAt = Instant.now().plus(RESET_CODE_EXPIRATION_MINUTES, ChronoUnit.MINUTES);
 
-            resetPasswordRepositoryImpl.saveOrUpdate(email, newCode, expiresAt);
+            resetPasswordRepository.saveOrUpdate(email, newCode, expiresAt);
 
-            emailUtils.sendResetPasswordCode(email, newCode);
+            emailService.sendResetPasswordCode(email, newCode);
             log.info("Reset password code re-sent to {}", email);
 
             return newCode;
@@ -107,18 +112,18 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
      * Se o código estiver expirado, a solicitação de redefinição será removida.
      *
      * @param email O e-mail do usuário associado ao código.
-     * @param code O código de redefinição para ser verificado.
+     * @param code  O código de redefinição para ser verificado.
      * @throws NotFound Se o código ou e-mail forem inválidos.
-     * @throws Expired Se o código já tiver expirado.
+     * @throws Expired  Se o código já tiver expirado.
      */
     @Override
     @Transactional
     public void verifyResetPasswordCode(String email, String code) {
-        ResetPasswordDomain record = resetPasswordRepositoryImpl.findByEmailAndCode(email, code)
-            .orElseThrow(() -> new NotFound("Invalid reset code or email."));
+        ResetPasswordDomain record = resetPasswordRepository.findByEmailAndCode(email, code)
+                .orElseThrow(() -> new NotFound("Invalid reset code or email."));
 
         if (Instant.now().isAfter(record.expiresAt())) {
-            resetPasswordRepositoryImpl.deleteByEmail(email);
+            resetPasswordRepository.deleteByEmail(email);
             log.info("Expired reset password code deleted for email: {}", email);
             throw new Expired("Reset password code has expired.");
         }
@@ -128,14 +133,17 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
 
     /**
      * Atualiza a senha do usuário associado ao e-mail informado.
-     * A senha é atualizada somente se o código de redefinição for válido e não expirado.
-     * Após atualização, a solicitação de redefinição é removida e o usuário é notificado por e-mail.
+     * A senha é atualizada somente se o código de redefinição for válido e não
+     * expirado.
+     * Após atualização, a solicitação de redefinição é removida e o usuário é
+     * notificado por e-mail.
      *
-     * @param email O e-mail do usuário que terá a senha atualizada.
+     * @param email       O e-mail do usuário que terá a senha atualizada.
      * @param newPassword A nova senha em texto puro.
      * @throws IllegalArgumentException Se a nova senha for nula ou vazia.
-     * @throws NotFound Se a solicitação de redefinição ou usuário não forem encontrados.
-     * @throws Expired Se o código de redefinição estiver expirado.
+     * @throws NotFound                 Se a solicitação de redefinição ou usuário
+     *                                  não forem encontrados.
+     * @throws Expired                  Se o código de redefinição estiver expirado.
      */
     @Override
     @Transactional
@@ -144,26 +152,25 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
             throw new IllegalArgumentException("New password must not be empty");
         }
 
-        ResetPasswordDomain record = resetPasswordRepositoryImpl.findByEmail(email)
-            .orElseThrow(() -> new NotFound("Reset request not found."));
+        ResetPasswordDomain record = resetPasswordRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFound("Reset request not found."));
 
         if (Instant.now().isAfter(record.expiresAt())) {
-            resetPasswordRepositoryImpl.deleteByEmail(email);
+            resetPasswordRepository.deleteByEmail(email);
             log.info("Expired reset password code deleted for email: {}", email);
             throw new Expired("Reset password code has expired.");
         }
 
-        UserDomain user = userRepositoryImpl.findByEmail(email)
-            .orElseThrow(() -> new NotFound("User with this email not found."));
+        UserDomain user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFound("User with this email not found."));
 
-        
-        userRepositoryImpl.updatePasswordByEmail(email, passwordEncoder.encode(newPassword));
+        userRepository.updatePasswordByEmail(email, passwordEncoder.encode(newPassword));
 
-        resetPasswordRepositoryImpl.deleteByEmail(email);
+        resetPasswordRepository.deleteByEmail(email);
         log.info("User password updated and reset token deleted for email: {}", email);
 
         try {
-            emailUtils.sendPasswordUpdated(email, user.username());
+            emailService.sendPasswordUpdated(email, user.username());
             log.info("Password updated notification sent to {}", email);
         } catch (MessagingException e) {
             log.error("Failed to send password updated email to {}: {}", email, e.getMessage(), e);
