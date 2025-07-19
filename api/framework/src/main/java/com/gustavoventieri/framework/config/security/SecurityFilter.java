@@ -7,14 +7,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.gustavoventieri.domain.entity.UserDomain;
+import org.gustavoventieri.domain.repository.UserRepository;
 import org.gustavoventieri.domain.utils.JWTUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import com.gustavoventieri.framework.driver.repository.UserRepositoryImpl;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -28,12 +27,11 @@ import lombok.RequiredArgsConstructor;
 public class SecurityFilter extends OncePerRequestFilter {
 
     private final JWTUtils jwtUtils;
-    private final UserRepositoryImpl userRepositoryImpl;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws IOException, ServletException {
-    
 
         if (shouldNotFilter(request)) {
             filterChain.doFilter(request, response);
@@ -45,10 +43,10 @@ public class SecurityFilter extends OncePerRequestFilter {
             try {
                 String userId = jwtUtils.validateAndExtractUserId(token);
                 UUID userIdToUUID = UUID.fromString(userId);
-                
+
                 if (userId != null) {
-                    
-                    Optional<UserDomain> user = userRepositoryImpl.findById(userIdToUUID);
+
+                    Optional<UserDomain> user = userRepository.findById(userIdToUUID);
 
                     var authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
                     var authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
@@ -62,18 +60,17 @@ public class SecurityFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-   
+    private String recoverToken(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
 
-        private String recoverToken(HttpServletRequest request) {
-            Cookie[] cookies = request.getCookies();
+        if (cookies == null)
+            return null;
 
-            if (cookies == null) return null;
-
-            return Arrays.stream(cookies)
-                    .filter(cookie -> "token".equals(cookie.getName()))
-                    .map(Cookie::getValue)
-                    .findFirst()
-                    .orElse(null);
-        }
+        return Arrays.stream(cookies)
+                .filter(cookie -> "token".equals(cookie.getName()))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
+    }
 
 }
