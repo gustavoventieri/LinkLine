@@ -3,8 +3,8 @@ package com.gustavoventieri.framework.useCase.service;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import org.gustavoventieri.domain.dto.response.GeneratedData;
 import org.gustavoventieri.domain.entity.ResetPasswordDomain;
-import org.gustavoventieri.domain.entity.UserDomain;
 import org.gustavoventieri.domain.exception.Expired;
 import org.gustavoventieri.domain.exception.InternalServerError;
 import org.gustavoventieri.domain.exception.NotFound;
@@ -13,7 +13,6 @@ import org.gustavoventieri.domain.repository.UserRepository;
 import org.gustavoventieri.domain.service.EmailService;
 import org.gustavoventieri.domain.service.ResetPasswordService;
 import org.gustavoventieri.domain.utils.GenerateCodeUtils;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import jakarta.mail.MessagingException;
@@ -41,8 +40,6 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
     private final EmailService emailService;
     private final GenerateCodeUtils generateCodeUtils;
 
-    private final PasswordEncoder passwordEncoder;
-
     /**
      * Envia um código para redefinição de senha para o e-mail informado.
      * Gera um código aleatório com validade definida e envia via e-mail.
@@ -55,24 +52,19 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
      */
     @Override
     @Transactional
-    public String sendResetPasswordCode(String email) {
-        try {
-            userRepository.findByEmail(email)
-                    .orElseThrow(() -> new NotFound("User with this email was not found."));
+    public void initiateResetPassword(final String email) {
 
-            String code = generateCodeUtils.generateCode();
-            Instant expiresAt = Instant.now().plus(RESET_CODE_EXPIRATION_MINUTES, ChronoUnit.MINUTES);
+        userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFound("User with this email was not found."));
 
-            resetPasswordRepository.saveOrUpdate(email, code, expiresAt);
+        final GeneratedData record = generateResetPasswordData();
 
-            emailService.sendResetPasswordCode(email, code);
-            log.info("Reset password code sent to {}", email);
+        persistResetPasswordRecord(email, record.code(), record.expiresAt());
 
-            return code;
-        } catch (MessagingException e) {
-            log.error("Failed to send reset password code email to {}: {}", email, e.getMessage(), e);
-            throw new InternalServerError("Failed to send reset password code email.", e);
-        }
+        sendResetPasswordEmail(email, record.code());
+
+        log.info("Reset password code sent to {}", email);
+
     }
 
     /**
@@ -87,24 +79,19 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
      */
     @Override
     @Transactional
-    public String resendResetPasswordCode(String email) {
-        try {
-            resetPasswordRepository.findByEmail(email)
-                    .orElseThrow(() -> new NotFound("Reset password request not found."));
+    public void resendResetPasswordCode(final String email) {
 
-            String newCode = generateCodeUtils.generateCode();
-            Instant expiresAt = Instant.now().plus(RESET_CODE_EXPIRATION_MINUTES, ChronoUnit.MINUTES);
+        resetPasswordRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFound("Reset password request not found."));
 
-            resetPasswordRepository.saveOrUpdate(email, newCode, expiresAt);
+        final GeneratedData record = generateResetPasswordData();
 
-            emailService.sendResetPasswordCode(email, newCode);
-            log.info("Reset password code re-sent to {}", email);
+        persistResetPasswordRecord(email, record.code(), record.expiresAt());
 
-            return newCode;
-        } catch (MessagingException e) {
-            log.error("Failed to resend reset password code email to {}: {}", email, e.getMessage(), e);
-            throw new InternalServerError("Failed to resend reset password code email.", e);
-        }
+        sendResetPasswordEmail(email, record.code());
+
+        log.info("Reset password code re-sent to {}", email);
+
     }
 
     /**
@@ -118,8 +105,8 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
      */
     @Override
     @Transactional
-    public void verifyResetPasswordCode(String email, String code) {
-        ResetPasswordDomain record = resetPasswordRepository.findByEmailAndCode(email, code)
+    public void validateResetPasswordCode(final String email, final String code) {
+        final ResetPasswordDomain record = resetPasswordRepository.findByEmailAndCode(email, code)
                 .orElseThrow(() -> new NotFound("Invalid reset code or email."));
 
         if (Instant.now().isAfter(record.expiresAt())) {
@@ -131,49 +118,25 @@ public class ResetPasswordServiceImpl implements ResetPasswordService {
         log.info("Reset password code verified for email: {}", email);
     }
 
-    /**
-     * Atualiza a senha do usuário associado ao e-mail informado.
-     * A senha é atualizada somente se o código de redefinição for válido e não
-     * expirado.
-     * Após atualização, a solicitação de redefinição é removida e o usuário é
-     * notificado por e-mail.
-     *
-     * @param email       O e-mail do usuário que terá a senha atualizada.
-     * @param newPassword A nova senha em texto puro.
-     * @throws IllegalArgumentException Se a nova senha for nula ou vazia.
-     * @throws NotFound                 Se a solicitação de redefinição ou usuário
-     *                                  não forem encontrados.
-     * @throws Expired                  Se o código de redefinição estiver expirado.
-     */
-    @Override
-    @Transactional
-    public void updateUserPasswordByEmail(String email, String newPassword) {
-        if (newPassword == null || newPassword.isBlank()) {
-            throw new IllegalArgumentException("New password must not be empty");
-        }
+    // Helpers
 
-        ResetPasswordDomain record = resetPasswordRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFound("Reset request not found."));
+    private GeneratedData generateResetPasswordData() {
+        final String code = generateCodeUtils.generateCode();
+        final Instant expiresAt = Instant.now().plus(RESET_CODE_EXPIRATION_MINUTES, ChronoUnit.MINUTES);
+        return new GeneratedData(code, expiresAt);
+    }
 
-        if (Instant.now().isAfter(record.expiresAt())) {
-            resetPasswordRepository.deleteByEmail(email);
-            log.info("Expired reset password code deleted for email: {}", email);
-            throw new Expired("Reset password code has expired.");
-        }
+    private void persistResetPasswordRecord(final String email, final String code, final Instant expiresAt) {
+        resetPasswordRepository.saveOrUpdate(email, code, expiresAt);
+    }
 
-        UserDomain user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFound("User with this email not found."));
-
-        userRepository.updatePasswordByEmail(email, passwordEncoder.encode(newPassword));
-
-        resetPasswordRepository.deleteByEmail(email);
-        log.info("User password updated and reset token deleted for email: {}", email);
-
+    private void sendResetPasswordEmail(final String email, final String code) {
         try {
-            emailService.sendPasswordUpdated(email, user.username());
-            log.info("Password updated notification sent to {}", email);
+            emailService.sendResetPasswordCode(email, code);
         } catch (MessagingException e) {
-            log.error("Failed to send password updated email to {}: {}", email, e.getMessage(), e);
+            log.error("Failed to send reset password email to {}: {}", email, e.getMessage(), e);
+            throw new InternalServerError("Failed to send reset password email", e);
         }
     }
+
 }
