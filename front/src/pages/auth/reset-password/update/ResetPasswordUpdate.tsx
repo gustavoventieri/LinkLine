@@ -25,7 +25,6 @@ import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 
 import { api } from "../../../../shared/services";
-import { useEmail } from "../../../../shared/contexts/EmailContext";
 import {
   getContainerStyle,
   getIconStyle,
@@ -47,7 +46,6 @@ export const ResetPasswordUpdate = () => {
   const smDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
   const mdDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
   const navigate = useNavigate();
-  const { email } = useEmail();
   const theme = useTheme();
 
   const emailRef = useRef<HTMLInputElement>(null);
@@ -94,9 +92,9 @@ export const ResetPasswordUpdate = () => {
 
   const onSubmit = async (data: FormData) => {
     const sessionToken = localStorage.getItem("authSession");
-
-    if (!sessionToken) {
-      console.warn("Nenhum token de sessão encontrado.");
+    const email = localStorage.getItem("email");
+    if (!sessionToken || !email) {
+      console.warn("Nenhum token de sessão encontrado ou email.");
       return;
     }
 
@@ -110,7 +108,8 @@ export const ResetPasswordUpdate = () => {
       const response = await api.put("/auth/reset-password/update", payload);
 
       if (response.status === 200) {
-        localStorage.removeItem("passwordVerificationSession");
+        localStorage.removeItem("authSession");
+        localStorage.removeItem("email");
 
         navigate("/login");
       }

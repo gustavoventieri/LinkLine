@@ -18,7 +18,6 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../../shared/services";
-import { useEmail } from "../../../shared/contexts/EmailContext";
 
 import {
   getContainerStyle,
@@ -41,7 +40,6 @@ export const EmailVerification = () => {
   const theme = useTheme();
 
   const navigate = useNavigate();
-  const { email } = useEmail();
 
   const smDown = useMediaQuery((t: Theme) => t.breakpoints.down("sm"));
   const mdDown = useMediaQuery((t: Theme) => t.breakpoints.down("md"));
@@ -111,7 +109,8 @@ export const EmailVerification = () => {
 
   const onSubmit = async (data: { verificationCode: string }) => {
     const token = localStorage.getItem("authSession");
-    if (!token) return console.warn("No session token");
+    const email = localStorage.getItem("email");
+    if (!token || !email) return console.warn("No session token or user email");
     setIsLoading(true);
     try {
       const { status } = await api.post("/auth/email-confirmation/verify", {
@@ -126,6 +125,8 @@ export const EmailVerification = () => {
         });
         if (reg.status === 200) {
           localStorage.removeItem("authSession");
+          localStorage.removeItem("email");
+
           navigate("/chats", { replace: true });
         }
       }
@@ -138,7 +139,8 @@ export const EmailVerification = () => {
 
   const onResend = async () => {
     const token = localStorage.getItem("authSession");
-    if (!token) return console.warn("No session token");
+    const email = localStorage.getItem("email");
+    if (!token || !email) return console.warn("No session token or user email");
     setIsResendDisabled(true);
     try {
       await api.post("/auth/email-confirmation/resend", { email });
@@ -253,7 +255,7 @@ export const EmailVerification = () => {
                   disabled={isLoading || code.some((x) => !x)}
                 >
                   {isLoading ? (
-                    <CircularProgress size={26} color="inherit" />
+                    <CircularProgress size={26} sx={{ color: "white" }} />
                   ) : (
                     "Verify"
                   )}

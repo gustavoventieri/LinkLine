@@ -20,7 +20,6 @@ import { useNavigate } from "react-router-dom";
 import { MailOutline } from "@mui/icons-material";
 
 import { api } from "../../../../shared/services";
-import { useEmail } from "../../../../shared/contexts/EmailContext";
 import {
   getBoxFormStyle,
   getTextFieldStyle,
@@ -36,7 +35,6 @@ export const ResetPasswordEmail = () => {
   const mdDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
 
   const navigate = useNavigate();
-  const { setEmail } = useEmail();
   const emailRef = useRef<HTMLInputElement>(null);
   const theme = useTheme();
 
@@ -88,7 +86,7 @@ export const ResetPasswordEmail = () => {
 
       await api.post("/auth/reset-password/send", payload);
 
-      setEmail(data.email);
+      localStorage.setItem("email", data.email);
 
       navigate("/reset-password/code");
     } catch (error: any) {

@@ -5,10 +5,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.gustavoventieri.framework.adapter.dto.request.auth.reset_password.ResetPasswordRequestImpl;
 import com.gustavoventieri.framework.adapter.dto.request.auth.reset_password.SendResetPasswordCodeRequestImpl;
 import com.gustavoventieri.framework.adapter.dto.request.auth.reset_password.VerifyResetPasswordCodeRequestImpl;
 
@@ -69,5 +71,19 @@ public class ResetPasswordController {
             @RequestBody @Valid VerifyResetPasswordCodeRequestImpl request) {
         resetPasswordService.validateResetPasswordCode(request.email(), request.code());
         return ResponseEntity.status(HttpStatus.OK).body("Reset password code is valid");
+    }
+
+    /**
+     * Updates the password for the user associated with the provided email.
+     * Typically called after a successful password reset code validation.
+     *
+     * @param request Object containing the user's email and the new password.
+     * @return ResponseEntity with status 200 OK and a message confirming the
+     *         password update.
+     */
+    @PutMapping("/update")
+    public ResponseEntity<String> updatePassword(@RequestBody @Valid ResetPasswordRequestImpl request) {
+        resetPasswordService.updateUserPasswordByEmail(request.email(), request.password());
+        return ResponseEntity.status(HttpStatus.OK).body("Password successfully updated");
     }
 }

@@ -28,7 +28,6 @@ import { yupResolver } from "@hookform/resolvers/yup";
 
 import { api } from "../../../shared/services";
 import { useNavigate } from "react-router-dom";
-import { useEmail } from "../../../shared/contexts/EmailContext";
 import {
   getContainerStyle,
   getIconStyle,
@@ -57,7 +56,6 @@ export const Register = () => {
   const lgDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("lg"));
   const xxlUp = useMediaQuery((theme: Theme) => theme.breakpoints.up("xxl"));
   const usernameRef = useRef<HTMLInputElement>(null);
-  const { setEmail } = useEmail();
   const navigate = useNavigate();
   const theme = useTheme();
 
@@ -102,9 +100,9 @@ export const Register = () => {
       });
 
       if (response.status === 200) {
-        setEmail(data.email);
+        localStorage.setItem("email", data.email);
         localStorage.setItem("authSession", "true");
-        setTimeout(() => navigate("/email-verification"), 4000);
+        navigate("/email-verification");
       }
     } catch (error: any) {
       setErrorMessage(error.response?.data.message || "Erro desconhecido");

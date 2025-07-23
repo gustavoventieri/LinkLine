@@ -20,7 +20,6 @@ import * as yup from "yup";
 import { useAppThemeContext } from "../../../../shared/contexts";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../../../shared/services";
-import { useEmail } from "../../../../shared/contexts/EmailContext";
 import { getContainerStyle, getInputStyle } from "./ResetPasswordCode.styles";
 
 const schema = yup.object({
@@ -36,7 +35,6 @@ export const ResetPasswordCode = () => {
   const smDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
   const mdDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
   const navigate = useNavigate();
-  const { email } = useEmail();
   const { themeName } = useAppThemeContext();
   const theme = useTheme();
 
@@ -110,8 +108,9 @@ export const ResetPasswordCode = () => {
 
   const onSubmit = async (data: FormData) => {
     const sessionToken = localStorage.getItem("authSession");
-    if (!sessionToken) {
-      console.warn("Nenhum token de sessão encontrado.");
+    const email = localStorage.getItem("email");
+    if (!sessionToken || !email) {
+      console.warn("Nenhum token de sessão encontrado ou email.");
       return;
     }
 
@@ -134,8 +133,9 @@ export const ResetPasswordCode = () => {
 
   const onResendCode = async () => {
     const sessionToken = localStorage.getItem("authSession");
-    if (!sessionToken) {
-      console.warn("Nenhum token de sessão encontrado.");
+    const email = localStorage.getItem("email");
+    if (!sessionToken || !email) {
+      console.warn("Nenhum token de sessão encontrado ou email.");
       return;
     }
 

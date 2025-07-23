@@ -8,7 +8,6 @@ import org.gustavoventieri.domain.entity.ResetPasswordDomain;
 import org.gustavoventieri.domain.exception.BadRequest;
 import org.gustavoventieri.domain.exception.InternalServerError;
 import org.gustavoventieri.domain.repository.ResetPasswordRepository;
-
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 
@@ -39,7 +38,7 @@ public class ResetPasswordRepositoryImpl implements ResetPasswordRepository {
      * @throws InternalServerError in case of unexpected error
      */
     @Override
-    public void saveOrUpdate(final String email, final String code, final Instant expiresAt) {
+    public void saveOrUpdate(final String email, final String code, final boolean verified, final Instant expiresAt) {
         try {
             final Optional<ResetPassword> existing = resetPasswordOrm.findByEmail(email);
 
@@ -48,9 +47,10 @@ public class ResetPasswordRepositoryImpl implements ResetPasswordRepository {
                         rp.setCode(code);
                         rp.setExpiresAt(expiresAt);
                         rp.setCreatedAt(LocalDateTime.now());
+                        rp.setVerified(verified);
                         return rp;
                     })
-                    .orElse(new ResetPassword(null, email, code, expiresAt, LocalDateTime.now()));
+                    .orElse(new ResetPassword(null, email, code, verified, expiresAt, LocalDateTime.now()));
 
             resetPasswordOrm.save(entity);
             log.info("ResetPassword saved/updated for email={}", email);

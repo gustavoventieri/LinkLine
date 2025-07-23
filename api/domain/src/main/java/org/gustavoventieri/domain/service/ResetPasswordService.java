@@ -7,4 +7,6 @@ public interface ResetPasswordService {
     void resendResetPasswordCode(String email);
 
     void validateResetPasswordCode(String email, String code);
+
+    void updateUserPasswordByEmail( String email,  String newPassword);
 }

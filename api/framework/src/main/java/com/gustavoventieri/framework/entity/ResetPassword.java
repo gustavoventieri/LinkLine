@@ -37,6 +37,9 @@ public class ResetPassword {
     @Column(nullable = false)
     private String code;
 
+    @Column(nullable = false)
+    private boolean verified;
+
     private Instant expiresAt;
 
     @CreationTimestamp

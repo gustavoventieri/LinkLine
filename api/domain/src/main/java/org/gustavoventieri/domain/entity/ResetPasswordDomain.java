@@ -7,6 +7,7 @@ public record ResetPasswordDomain(
     Long id,
     String email,
     String code,
+    boolean verified,
     Instant expiresAt,
     LocalDateTime createdAt
 ) {}
