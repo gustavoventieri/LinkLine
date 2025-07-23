@@ -153,10 +153,7 @@ export const Sidebar: React.FC<ISidebarProps> = ({ showIcon }) => {
       sx={{
         width: isMobile ? 240 : "70px",
         height: "100vh",
-        backgroundColor:
-          themeName === "light"
-            ? theme.palette.background.default
-            : theme.palette.background.paper,
+        backgroundColor: theme.palette.background.default,
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",

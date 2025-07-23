@@ -1,10 +1,6 @@
 import { Theme } from "@mui/material";
 
-export const getLeftPanel = (theme: Theme) => ({
-  borderRight: `1px solid ${theme.palette.divider}`,
-});
-
-export const getDiversityIcon = (theme: Theme,) => ({
+export const getDiversityIcon = (theme: Theme) => ({
   width: 80,
   height: 80,
   color:
@@ -18,23 +14,20 @@ export const getDiversityText = (theme: Theme) => ({
   textAlign: "center",
 });
 
-
 export const getSearchInput = (
   theme: Theme,
   mdDown: boolean,
   smDown: boolean
 ) => ({
   width: mdDown ? "100%" : "80%",
-  boxShadow: theme.palette.mode === "light" ? 1 : 0,
+  boxShadow: 5,
   borderRadius: "10px",
   mx: smDown ? 1 : 3,
   "& .MuiOutlinedInput-root": {
     borderRadius: "10px",
     height: "60px",
-    backgroundColor:
-      theme.palette.mode === "light"
-        ? "white"
-        : theme.palette.background.default,
+    backgroundColor: theme.palette.background.paper,
+
     "& fieldset": { borderColor: "transparent" },
     "&:hover fieldset": {
       borderColor: theme.palette.action.hover,
@@ -49,4 +42,3 @@ export const getSearchInput = (
     paddingBottom: "12px",
   },
 });
-

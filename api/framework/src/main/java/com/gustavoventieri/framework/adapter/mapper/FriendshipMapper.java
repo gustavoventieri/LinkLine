@@ -1,6 +1,5 @@
 package com.gustavoventieri.framework.adapter.mapper;
 
-
 import org.gustavoventieri.domain.dto.response.GetAllFriendships;
 import org.gustavoventieri.domain.entity.FriendshipDomain;
 
@@ -72,7 +71,8 @@ public class FriendshipMapper {
                 friendship.id(),
                 senderUsername,
                 receiverUsername,
-                friendship.status().name());
+                friendship.status().name(),
+                friendship.createdAt());
     }
 
 }

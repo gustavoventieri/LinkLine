@@ -145,6 +145,13 @@ public class FriendshipRepositoryImpl implements FriendshipRepository {
             final List<Friendship> friendships = friendshipOrm
                     .findAllBySender_IdOrReceiver_IdOrderByCreatedAtDesc(userId, userId);
             return friendships.stream()
+                    .filter(friendship -> (friendship.getReceiver().getId().equals(userId)
+                            && friendship.getStatus() == RequestStatus.PENDING
+                            || friendship.getReceiver().getId().equals(userId)
+                                    && friendship.getStatus() == RequestStatus.ACCEPTED)
+                            ||
+                            (friendship.getSender().getId().equals(userId)
+                                    && friendship.getStatus() == RequestStatus.ACCEPTED))
                     .map(FriendshipMapper::toDomainComplete)
                     .toList();
         } catch (final Exception e) {

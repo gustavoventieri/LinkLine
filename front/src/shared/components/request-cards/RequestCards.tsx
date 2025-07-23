@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo } from "react";
 import { PersonOutlineOutlined } from "@mui/icons-material";
 import {
   Avatar,
@@ -13,9 +13,10 @@ interface RequestCardProps {
   avatarUrl: string;
   smDown: boolean;
   mdDown: boolean;
-  username: string;
+  currentUser: string;
+  sender: string;
+  receiver: string;
   status: "pending" | "accepted" | "declined";
-  type: 0 | 1; // 0 = sent, 1 = received
   onAccept?: () => void;
   onDecline?: () => void;
   loading?: boolean;
@@ -26,123 +27,104 @@ export const RequestCard = memo(
     avatarUrl,
     smDown,
     mdDown,
-    username,
+    currentUser,
+    sender,
+    receiver,
     status,
-    type,
     onAccept,
     onDecline,
     loading = false,
   }: RequestCardProps) => {
-    const content = useMemo(() => {
-      if (status === "pending") {
-        if (type === 1) {
-          return (
-            <Box
-              alignItems="center"
-              display="flex"
-              justifyContent="space-between"
-            >
-              <Typography fontSize={14}>
-                <strong>{username}</strong> wants to follow you
-              </Typography>
+    const isYouSender = currentUser === sender;
+    const isYouReceiver = currentUser === receiver;
+    const otherUser = isYouSender ? receiver : sender;
+    const avatarLetter = otherUser[0]?.toUpperCase() || "?";
 
+    const renderContent = () => {
+      switch (status) {
+        case "pending":
+          if (isYouSender) {
+            return (
+              <Typography fontSize={smDown ? 10 : 12}>
+                You sent a follow request to <strong>{receiver}</strong>
+              </Typography>
+            );
+          }
+
+          if (isYouReceiver) {
+            return (
               <Box
+                alignItems="center"
                 display="flex"
-                ml={1}
-                gap={0.5}
-                flexDirection={smDown ? "column" : "row"}
+                justifyContent="space-between"
               >
-                <Button
-                  variant="contained"
-                  onClick={onAccept}
-                  disabled={loading}
-                  sx={{ py: 0.5 }}
+                <Typography fontSize={14}>
+                  <strong>{sender}</strong> wants to follow you
+                </Typography>
+
+                <Box
+                  display="flex"
+                  ml={1}
+                  gap={0.5}
+                  flexDirection={smDown ? "column" : "row"}
                 >
-                  Accept
-                  {loading && (
-                    <CircularProgress
-                      size={24}
-                      sx={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        marginTop: "-12px",
-                        marginLeft: "-12px",
-                        color: "white",
-                      }}
-                    />
-                  )}
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={onDecline}
-                  disabled={loading}
-                  sx={{ py: 0.5 }}
-                >
-                  Decline
-                  {loading && (
-                    <CircularProgress
-                      size={24}
-                      sx={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        marginTop: "-12px",
-                        marginLeft: "-12px",
-                      }}
-                    />
-                  )}
-                </Button>
+                  <Button
+                    variant="contained"
+                    onClick={onAccept}
+                    disabled={loading}
+                    sx={{ py: 0.5, position: "relative" }}
+                  >
+                    Accept
+                    {loading && (
+                      <CircularProgress
+                        size={24}
+                        sx={{
+                          position: "absolute",
+                          top: "50%",
+                          left: "50%",
+                          marginTop: "-12px",
+                          marginLeft: "-12px",
+                          color: "white",
+                        }}
+                      />
+                    )}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={onDecline}
+                    disabled={loading}
+                    sx={{ py: 0.5, position: "relative" }}
+                  >
+                    Decline
+                    {loading && (
+                      <CircularProgress
+                        size={24}
+                        sx={{
+                          position: "absolute",
+                          top: "50%",
+                          left: "50%",
+                          marginTop: "-12px",
+                          marginLeft: "-12px",
+                        }}
+                      />
+                    )}
+                  </Button>
+                </Box>
               </Box>
-            </Box>
-          );
-        } else {
+            );
+          }
+          break;
+
+        case "accepted":
           return (
             <Typography fontSize={smDown ? 10 : 12}>
-              You sent a follow request to <strong>{username}</strong>
+              You and <strong>{otherUser}</strong> are now connected.
             </Typography>
           );
-        }
       }
 
-      if (status === "accepted") {
-        return (
-          <Typography fontSize={14}>
-            {type === 1 ? (
-              <>
-                You accepted <strong>{username}</strong>'s request.
-              </>
-            ) : (
-              <>
-                <strong>{username}</strong> accepted your request.
-              </>
-            )}
-          </Typography>
-        );
-      }
-
-      if (status === "declined") {
-        return (
-          <Typography fontSize={14}>
-            {type === 1 ? (
-              <>
-                You declined <strong>{username}</strong>'s request.
-              </>
-            ) : (
-              <>
-                <strong>{username}</strong> declined your request.
-              </>
-            )}
-          </Typography>
-        );
-      }
-
-      return (
-        <Typography fontSize={14}>
-          Unknown request status for <strong>{username}</strong>
-        </Typography>
-      );
-    }, [avatarUrl, status, type, username, onAccept, onDecline, loading]);
+      return null;
+    };
 
     return (
       <Card
@@ -178,13 +160,10 @@ export const RequestCard = memo(
               fontSize: smDown ? "1rem" : "1.25rem",
             }}
           >
-            {!avatarUrl && username
-              ? username[0].toUpperCase()
-              : !avatarUrl && (
-                  <PersonOutlineOutlined style={{ color: "black" }} />
-                )}
+            {!avatarUrl ? avatarLetter : null}
           </Avatar>
-          <Box sx={{ width: "100%" }}>{content}</Box>
+
+          <Box sx={{ width: "100%" }}>{renderContent()}</Box>
         </Box>
       </Card>
     );

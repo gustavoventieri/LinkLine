@@ -2,16 +2,19 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { api } from "../../shared/services";
 import { Box, CircularProgress } from "@mui/material";
+import { useUsername } from "../../shared/contexts/UsernameContext";
 
 export const PrivateAppLayout = () => {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const { setUsername } = useUsername();
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        await api.get("/auth/isAuth");
+        const response = await api.get("/auth/isAuth");
         setAuthenticated(true);
+        setUsername(response.data.username);
       } catch (err) {
         setAuthenticated(false);
       } finally {

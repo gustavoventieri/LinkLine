@@ -21,7 +21,6 @@ import {
 import {
   getDiversityIcon,
   getDiversityText,
-  getLeftPanel,
   getSearchInput,
 } from "./FindFriends.styles";
 
@@ -49,7 +48,6 @@ export const FindFriends = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const leftPanelStyle = getLeftPanel(theme);
   const diversityIconStyle = getDiversityIcon(theme);
   const diversityTextStyle = getDiversityText(theme);
   const searchInputStyle = getSearchInput(theme, mdDown, smDown);
@@ -153,15 +151,10 @@ export const FindFriends = () => {
           <Box
             width="30%"
             height="100%"
-            bgcolor={
-              theme.palette.mode === "light"
-                ? theme.palette.background.paper
-                : theme.palette.background.default
-            }
+            bgcolor={theme.palette.background.paper}
             display="flex"
             flexDirection="column"
             p={2}
-            sx={leftPanelStyle}
           >
             <Box
               display="flex"
@@ -227,11 +220,7 @@ export const FindFriends = () => {
           display="flex"
           height="100%"
           flexDirection="column"
-          bgcolor={
-            theme.palette.mode === "light"
-              ? theme.palette.background.default
-              : theme.palette.background.paper
-          }
+          bgcolor={theme.palette.background.default}
           sx={{ pt: smDown ? 2 : 3 }}
           gap={3}
         >

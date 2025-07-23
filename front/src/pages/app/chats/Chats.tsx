@@ -57,7 +57,7 @@ export const Chats = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedChat, setSelectedChat] = useState<ChatData | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [newMessage, setNewMessage] = useState("");
@@ -79,18 +79,7 @@ export const Chats = () => {
     getAllChats();
   }, []);
 
-  useEffect(() => {
-    const getUserId = async () => {
-      try {
-        const response = await api.get("/auth/isAuth");
-        if (response.data.userId) setUserId(response.data.userId);
-      } catch (err) {
-        navigate("/login");
-        console.error("Erro ao autenticar:", err);
-      }
-    };
-    getUserId();
-  }, []);
+
 
   const loadMessages = async (chatId: string) => {
     setLoadingMessages(true);
@@ -148,11 +137,13 @@ export const Chats = () => {
             flexDirection="column"
             px={2}
             pt={mdDown ? 2 : 4}
+            bgcolor={theme.palette.background.paper}
+            sx={{ border: "1px solid primary" }}
           >
             <Box sx={searchBarStyle}>
-              <SearchIcon sx={{ ml: 2 }} color="primary" />
+              <SearchIcon sx={{ ml: 2, color: theme.palette.primary.main }} />
               <InputBase
-                sx={{ ml: 2 }}
+                sx={{ ml: 2, width: "100%" }}
                 placeholder="Search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -264,10 +255,7 @@ export const Chats = () => {
                       <ArrowBack />
                     </IconButton>
                   )}
-                  <Avatar
-                    src={selectedChat.participant.avatarUrl}
-                    sx={{ ml: mdDown ? 0.5 : 0 }}
-                  >
+                  <Avatar src={"a"} sx={{ ml: mdDown ? 0.5 : 0 }}>
                     <Typography
                       fontSize={16}
                       fontWeight="bold"
@@ -275,7 +263,7 @@ export const Chats = () => {
                         themeName === "dark" ? "white" : "primary.secondary"
                       }
                     >
-                      {selectedChat.participant.chatNameForMember.charAt(0)}
+                      {"a"}
                     </Typography>
                   </Avatar>
                   <Typography
@@ -283,7 +271,7 @@ export const Chats = () => {
                     fontWeight={700}
                     sx={{ color: theme.palette.text.primary }}
                   >
-                    {selectedChat.participant.chatNameForMember}
+                    {"a"}
                   </Typography>
                 </Box>
                 <IconButton>
@@ -315,14 +303,14 @@ export const Chats = () => {
                   <Box
                     key={msg.id}
                     alignSelf={
-                      msg.senderId === userId ? "flex-end" : "flex-start"
+                      msg.senderId === username ? "flex-end" : "flex-start"
                     }
                     bgcolor={
-                      msg.senderId === userId
+                      msg.senderId === username
                         ? theme.palette.primary.main
                         : theme.palette.grey[300]
                     }
-                    color={msg.senderId === userId ? "white" : "black"}
+                    color={msg.senderId === username ? "white" : "black"}
                     px={2}
                     py={1}
                     borderRadius={2}
@@ -358,6 +346,17 @@ export const Chats = () => {
                   sx={{
                     backgroundColor: theme.palette.background.paper,
                     borderRadius: 2,
+                    boxShadow: 4,
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "transparent", // tira a borda padrão
+                      },
+                      "&:hover fieldset": {
+                        borderRadius: 2,
+                        borderColor: theme.palette.primary.main,
+                      },
+                      "&.Mui-focused fieldset": { borderRadius: 2 },
+                    },
                   }}
                   placeholder="Digite uma mensagem"
                   value={newMessage}

@@ -122,7 +122,7 @@ export const EmailVerification = () => {
         const reg = await api.post("/auth/register", {
           email,
           code: data.verificationCode,
-          avatarUrl: "...",
+          avatarUrl: "asdfghjkljhgfd",
         });
         if (reg.status === 200) {
           localStorage.removeItem("authSession");

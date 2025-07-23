@@ -51,10 +51,14 @@ public class FriendshiplServiceImpl implements FriendshipService {
             throw new IllegalArgumentException("You cannot send a friendship request to yourself.");
         }
 
-        final List<RequestStatus> blockedStatuses = Arrays.asList(RequestStatus.PENDING, RequestStatus.ACCEPTED);
+        final List<RequestStatus> blockedStatuses = Arrays.asList(RequestStatus.PENDING, RequestStatus.ACCEPTED,
+                RequestStatus.REMOVED);
 
         friendshipRepository.findExisting(senderId, receiver.id(), blockedStatuses)
                 .ifPresent(existing -> {
+                    if (reactivateFriendshipIfRemoved(existing)) {
+                        return;
+                    }
                     log.warn("User {} already has a pending request or is already friends with {}", senderId,
                             receiverUsername);
                     throw new IllegalStateException("You already sent a request or are already friends.");
@@ -125,4 +129,17 @@ public class FriendshiplServiceImpl implements FriendshipService {
         log.info("Found {} friendships/requests for user {}", result.size(), userId);
         return result;
     }
+
+    // Helpers
+
+    private boolean reactivateFriendshipIfRemoved(FriendshipDomain existingFriendship) {
+        if (existingFriendship.status() == RequestStatus.REMOVED) {
+            friendshipRepository.updateStatus(existingFriendship.id(), RequestStatus.PENDING);
+            log.info("Friendship reactivated between user {} and user {}",
+                    existingFriendship.sender(), existingFriendship.receiver());
+            return true;
+        }
+        return false;
+    }
+
 }

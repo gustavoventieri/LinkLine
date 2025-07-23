@@ -104,7 +104,7 @@ export const Register = () => {
       if (response.status === 200) {
         setEmail(data.email);
         localStorage.setItem("authSession", "true");
-        setTimeout(() => navigate("/email-verification"), 1000);
+        setTimeout(() => navigate("/email-verification"), 4000);
       }
     } catch (error: any) {
       setErrorMessage(error.response?.data.message || "Erro desconhecido");

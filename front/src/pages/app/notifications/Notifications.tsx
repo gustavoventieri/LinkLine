@@ -11,14 +11,16 @@ import { Diversity3Rounded } from "@mui/icons-material";
 import { BaseLayout } from "../../../shared/layouts";
 import { api } from "../../../shared/services";
 import { RequestCard } from "../../../shared/components";
+import { useNavigate } from "react-router-dom";
+import { UUID } from "crypto";
+import { useUsername } from "../../../shared/contexts/UsernameContext";
 
 interface Request {
-  id: string;
+  id: UUID;
   senderUsername: string;
   receiverUsername: string;
-  status: "declined" | "pending" | "accepted";
+  status: "pending" | "accepted";
   createdAt: string;
-  updatedAt: string;
 }
 
 export const Notifications = () => {
@@ -26,69 +28,65 @@ export const Notifications = () => {
   const smDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
   const theme = useTheme();
 
-  const [statusFilter, setStatusFilter] = useState<
-    "declined" | "pending" | "accepted"
-  >("pending");
-  const [tab, setTab] = useState<0 | 1>(1);
   const [requests, setRequests] = useState<Request[]>([]);
+  const { username } = useUsername();
   const [loading, setLoading] = useState(false);
   const [requestLoadingId, setRequestLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchRequests = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const type = tab === 0 ? "sent" : "received";
-      const response = await api.get(`/chat-request/${type}/${statusFilter}`);
-
-      const requestsObject = response.data.chat_requests || {};
-      const requestsArray: Request[] = Object.values(requestsObject).map(
-        (req: any) => ({
-          id: req.id,
-          senderUsername: req.sender.username,
-          receiverUsername: req.receiver.username,
-          status: req.status.toLowerCase() as Request["status"],
-          createdAt: req.createdAt || "",
-          updatedAt: req.updatedAt || "",
-        })
-      );
-
-      setRequests(requestsArray);
-    } catch (err: any) {
-      if (err.response?.status) {
-        setError("Nenhuma solicitação encontrada");
-        return;
-      }
-      setError("Erro ao buscar solicitações");
-      setRequests([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchRequests = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await api.get("/friendship/get-all");
+
+        const requestsArray: Request[] = (response.data || []).map(
+          (req: any) => ({
+            id: req.friendshipId,
+            senderUsername: req.sender,
+            receiverUsername: req.receiver,
+            status: req.status.toLowerCase() as Request["status"],
+            createdAt: req.createdAt,
+          })
+        );
+
+        setRequests(requestsArray);
+      } catch (err: any) {
+        if (err.response?.status) {
+          setError("Nenhuma solicitação encontrada");
+          return;
+        }
+        setError("Erro ao buscar solicitações");
+        setRequests([]);
+      } finally {
+        setLoading(false);
+        console.log(username);
+      }
+    };
     fetchRequests();
-  }, [statusFilter, tab]);
+  }, []);
 
   const handleUpdateChatRequestStatus = async (
-    username: string,
-    chatRequestId: string,
+    chatRequestId: UUID,
     newStatus: "ACCEPTED" | "DECLINED"
   ) => {
     setRequestLoadingId(chatRequestId);
     try {
-      const payload = { newStatus };
+      const payload = { status: newStatus };
+      console.log(chatRequestId);
       const response = await api.put(
-        `/chat-request/update/${chatRequestId}`,
+        `/friendship/update/${chatRequestId}`,
         payload
       );
 
-      if (response.status === 200 || response.status === 201) {
+      console.log(payload);
+
+      if (response.status === 200) {
         if (newStatus === "ACCEPTED") {
-          await handleCreatePrivateChat(username);
+          console.log("Deu Certo");
+          //await handleCreatePrivateChat(username);
         }
-        await fetchRequests();
       } else {
         console.warn(
           `Atualização de status falhou. Status HTTP: ${response.status}`
@@ -124,11 +122,7 @@ export const Notifications = () => {
           <Box
             width="30%"
             height="100vh"
-            bgcolor={
-              theme.palette.mode === "light"
-                ? theme.palette.background.paper
-                : theme.palette.background.default
-            }
+            bgcolor={theme.palette.background.paper}
             display="flex"
             flexDirection="column"
             p={2}
@@ -167,11 +161,7 @@ export const Notifications = () => {
           flex={1}
           display="flex"
           flexDirection="column"
-          bgcolor={
-            theme.palette.mode === "light"
-              ? theme.palette.background.default
-              : theme.palette.background.paper
-          }
+          bgcolor={theme.palette.background.default}
         >
           <Box
             display="flex"
@@ -204,43 +194,36 @@ export const Notifications = () => {
             ) : (
               <Box
                 width="100%"
-                mt={-10}
                 display="flex"
                 flexDirection="column"
                 alignItems="center"
-                justifyContent="center"
+                justifyContent={
+                  error || requests.length === 0 ? "center" : "start"
+                }
                 flexGrow={1}
+                px={2}
               >
                 {error || requests.length === 0 ? (
-                  <Typography color="text.secondary" fontSize={16}>
+                  <Typography color="text.secondary" fontSize={16} mt={-10}>
                     {error || "Nenhuma solicitação encontrada"}
                   </Typography>
                 ) : (
                   requests.map((req) => (
                     <RequestCard
-                      avatarUrl={req.receiverUsername}
+                      avatarUrl={""}
+                      sender={req.senderUsername}
+                      receiver={req.receiverUsername}
                       mdDown={mdDown}
                       smDown={smDown}
                       key={req.id}
-                      username={
-                        tab === 0 ? req.receiverUsername : req.senderUsername
-                      }
+                      currentUser={username}
                       status={req.status}
                       onAccept={() =>
-                        handleUpdateChatRequestStatus(
-                          tab === 0 ? req.receiverUsername : req.senderUsername,
-                          req.id,
-                          "ACCEPTED"
-                        )
+                        handleUpdateChatRequestStatus(req.id, "ACCEPTED")
                       }
                       onDecline={() =>
-                        handleUpdateChatRequestStatus(
-                          tab === 0 ? req.receiverUsername : req.senderUsername,
-                          req.id,
-                          "DECLINED"
-                        )
+                        handleUpdateChatRequestStatus(req.id, "DECLINED")
                       }
-                      type={tab}
                       loading={requestLoadingId === req.id}
                     />
                   ))

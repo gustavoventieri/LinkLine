@@ -8,7 +8,5 @@ export const getSearchBarStyle = (theme: Theme) => ({
   alignItems: "center",
   mb: theme.breakpoints.down("md") ? 2 : 5,
   borderRadius: 2,
-  backgroundColor: theme.palette.background.paper,
+  backgroundColor: theme.palette.background.default,
 });
-
-
