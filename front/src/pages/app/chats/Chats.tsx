@@ -79,8 +79,6 @@ export const Chats = () => {
     getAllChats();
   }, []);
 
-
-
   const loadMessages = async (chatId: string) => {
     setLoadingMessages(true);
     try {
@@ -137,7 +135,11 @@ export const Chats = () => {
             flexDirection="column"
             px={2}
             pt={mdDown ? 2 : 4}
-            bgcolor={theme.palette.background.paper}
+            bgcolor={
+              theme.palette.mode == "light"
+                ? theme.palette.background.paper
+                : theme.palette.background.default
+            }
             sx={{ border: "1px solid primary" }}
           >
             <Box sx={searchBarStyle}>
@@ -231,12 +233,7 @@ export const Chats = () => {
         )}
 
         {(!mdDown || selectedChat) && (
-          <Box
-            flex={1}
-            display="flex"
-            flexDirection="column"
-            px={mdDown ? 0 : 2}
-          >
+          <Box flex={1} display="flex" flexDirection="column">
             {selectedChat && (
               <Box
                 sx={{ backgroundColor: theme.palette.background.paper }}
@@ -244,7 +241,6 @@ export const Chats = () => {
                 alignItems="center"
                 justifyContent="space-between"
                 mt={mdDown ? 0 : 3}
-                px={mdDown ? 0 : 2}
                 py={2}
                 boxShadow={3}
                 borderRadius={mdDown ? 0 : 2}
@@ -281,7 +277,7 @@ export const Chats = () => {
             )}
 
             {/* Mensagens */}
-            <Box flex={1} p={2} overflow="auto">
+            <Box flex={1} overflow="auto">
               {loadingMessages ? (
                 <Box display="flex" justifyContent="center">
                   <CircularProgress size={30} />
@@ -293,6 +289,12 @@ export const Chats = () => {
                   justifyContent="center"
                   alignItems="center"
                   height="100%"
+                  sx={{
+                    backgroundColor:
+                      theme.palette.mode == "light"
+                        ? theme.palette.background.default
+                        : theme.palette.background.paper,
+                  }}
                 >
                   <Typography color="textSecondary" mt={4}>
                     Selecione um chat para começar a conversar

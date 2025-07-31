@@ -7,7 +7,7 @@ export const getContainerStyle = (
 ) => ({
   borderRadius: smDown ? 0 : 3,
   overflow: "hidden",
-  boxShadow: smDown ? 0 : 10,
+  boxShadow: mdDown ? 0 : 10,
   backgroundColor: mdDown ? "none" : theme.palette.background.paper,
 });
 

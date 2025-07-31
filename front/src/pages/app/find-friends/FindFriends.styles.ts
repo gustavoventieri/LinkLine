@@ -26,7 +26,10 @@ export const getSearchInput = (
   "& .MuiOutlinedInput-root": {
     borderRadius: "10px",
     height: "60px",
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor:
+      theme.palette.mode === "light"
+        ? theme.palette.background.paper
+        : theme.palette.background.default,
 
     "& fieldset": { borderColor: "transparent" },
     "&:hover fieldset": {

@@ -1,19 +1,18 @@
-package com.gustavoventieri.framework.adapter.dto.request.auth;
+package com.gustavoventieri.framework.adapter.dto.request.auth.reset_password;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-// Valida a requisição feita
-public record LoginRequestImpl(
+public record ResetPasswordRequestDTO(
     @NotBlank(message = "Email cannot be empty.")
     @Email
     String email, 
-
+    
     @NotBlank(message = "Password cannot be empty.")
-    @Size(min = 8, message = "Password cannot be less than 2 characters.")
+    @Size(min = 8, message = "Password cannot be less than 8 characters.")
     @Size(max = 32, message = "Password cannot exceed 50 characters.")
     String password
-){
+) {
     
 }

@@ -31,7 +31,7 @@ interface PotentialFriend {
 }
 
 function getRandomLetter() {
-  const letters = "mg";
+  const letters = "g";
   return letters.charAt(Math.floor(Math.random() * letters.length));
 }
 
@@ -72,9 +72,8 @@ export const FindFriends = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.post("/user/search", {
-        searchTerm: currentSearchTerm,
-        limit: 10,
+      const response = await api.get("/friendship/search", {
+        params: { searchTerm: currentSearchTerm },
       });
       if (response.status === 200) {
         setSearchResults(response.data);
@@ -107,9 +106,8 @@ export const FindFriends = () => {
       setLoadingAutoFriends(true);
       try {
         const letter = getRandomLetter();
-        const response = await api.post("/user/search", {
-          searchTerm: letter,
-          limit: 10,
+        const response = await api.get("/friendship/search", {
+          params: { searchTerm: letter },
         });
         if (response.status === 200) {
           setAutoFriends(response.data);
@@ -134,8 +132,8 @@ export const FindFriends = () => {
     status: UserRelationshipStatus
   ) => {
     try {
-      if (status === null) {
-        await api.post("/chat-request/create", { username });
+      if (status === "NOT_FRIEND") {
+        await api.post("/friendship/create", { friendUsername: username });
         fetchPotentialFriends(searchTerm);
       }
     } catch (err: any) {
@@ -151,7 +149,11 @@ export const FindFriends = () => {
           <Box
             width="30%"
             height="100%"
-            bgcolor={theme.palette.background.paper}
+            bgcolor={
+              theme.palette.mode === "light"
+                ? theme.palette.background.paper
+                : theme.palette.background.default
+            }
             display="flex"
             flexDirection="column"
             p={2}
@@ -220,7 +222,11 @@ export const FindFriends = () => {
           display="flex"
           height="100%"
           flexDirection="column"
-          bgcolor={theme.palette.background.default}
+          bgcolor={
+            theme.palette.mode === "light"
+              ? theme.palette.background.default
+              : theme.palette.background.paper
+          }
           sx={{ pt: smDown ? 2 : 3 }}
           gap={3}
         >

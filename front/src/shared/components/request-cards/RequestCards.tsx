@@ -1,11 +1,11 @@
 import { memo } from "react";
-import { PersonOutlineOutlined } from "@mui/icons-material";
 import {
   Avatar,
   Box,
   Button,
   Card,
   CircularProgress,
+  Theme,
   Typography,
 } from "@mui/material";
 
@@ -13,6 +13,7 @@ interface RequestCardProps {
   avatarUrl: string;
   smDown: boolean;
   mdDown: boolean;
+  theme: Theme;
   currentUser: string;
   sender: string;
   receiver: string;
@@ -28,6 +29,7 @@ export const RequestCard = memo(
     smDown,
     mdDown,
     currentUser,
+    theme,
     sender,
     receiver,
     status,
@@ -137,8 +139,12 @@ export const RequestCard = memo(
           width: mdDown ? "100%" : "80%",
           mb: 1.5,
           borderRadius: "8px",
+          boxShadow: 4,
           gap: 2,
-          backgroundColor: "primary.paper",
+          backgroundColor:
+            theme.palette.mode == "light"
+              ? theme.palette.background.paper
+              : theme.palette.background.default,
         }}
       >
         <Box

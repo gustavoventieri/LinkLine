@@ -2,9 +2,11 @@ package com.gustavoventieri.framework.useCase.service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.gustavoventieri.domain.dto.response.GetAllFriendships;
+import org.gustavoventieri.domain.dto.response.PotentialFriendResponse;
 import org.gustavoventieri.domain.entity.FriendshipDomain;
 import org.gustavoventieri.domain.entity.UserDomain;
 import org.gustavoventieri.domain.enums.RequestStatus;
@@ -130,9 +132,64 @@ public class FriendshiplServiceImpl implements FriendshipService {
         return result;
     }
 
+    /**
+     * Searches for users by a partial or full username (excluding the current user)
+     * and returns
+     * a list of potential friends along with the current friendship status.
+     *
+     * <p>
+     * The search is limited by the specified {@code searchLimit} to avoid returning
+     * too many results.
+     * If a friendship exists between the current user and a potential match, the
+     * friendship status
+     * (e.g., PENDING, ACCEPTED) is returned. Otherwise, the status will be
+     * "NOT_FRIEND".
+     * </p>
+     *
+     * @param searchTerm    the username or partial username to search for
+     * @param currentUserId the UUID of the currently authenticated user (to exclude
+     *                      from results)
+     * @param searchLimit   the maximum number of users to return
+     * @return a list of {@link PotentialFriendResponse} objects containing basic
+     *         user info and friendship status
+     */
+    @Override
+    public List<PotentialFriendResponse> findUsersByUsername(final String searchTerm, final UUID currentUserId,
+            final int searchLimit) {
+        log.debug("Searching users by username. Term: {}, currentUserId: {}", searchTerm, currentUserId);
+
+        List<UserDomain> potentialFriends = userRepository
+                .searchByApproximateUsername(searchTerm, currentUserId)
+                .stream()
+                .limit(searchLimit)
+                .toList();
+
+        return potentialFriends.stream()
+                .map(potential -> {
+                    UUID otherUserId = potential.id();
+
+                    // Verifica se existe amizade entre os dois usuários
+                    Optional<FriendshipDomain> optionalFriendship = friendshipRepository.findExisting(
+                            currentUserId,
+                            otherUserId,
+                            List.of(RequestStatus.PENDING, RequestStatus.ACCEPTED));
+
+                    // Define o status como String para lidar com "not_friend"
+                    String status = optionalFriendship
+                            .map(friendship -> friendship.status().name())
+                            .orElse("NOT_FRIEND");
+
+                    return new PotentialFriendResponse(
+                            potential.username(),
+                            potential.avatarUrl(),
+                            status);
+                })
+                .toList();
+    }
+
     // Helpers
 
-    private boolean reactivateFriendshipIfRemoved(FriendshipDomain existingFriendship) {
+    private boolean reactivateFriendshipIfRemoved(final FriendshipDomain existingFriendship) {
         if (existingFriendship.status() == RequestStatus.REMOVED) {
             friendshipRepository.updateStatus(existingFriendship.id(), RequestStatus.PENDING);
             log.info("Friendship reactivated between user {} and user {}",

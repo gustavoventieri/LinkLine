@@ -4,7 +4,7 @@ import org.gustavoventieri.domain.enums.RequestStatus;
 
 import jakarta.validation.constraints.NotNull;
 
-public record UpdateFriendshipRequest(
+public record UpdateFriendshipRequestDTO(
         @NotNull(message = "O status é obrigatório.") RequestStatus status) {
 
 }

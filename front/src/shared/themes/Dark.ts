@@ -17,8 +17,8 @@ export const DarkTheme = createTheme({
       contrastText: "#ffffff",
     },
     background: {
-      paper: "#121416", // quase preto
-      default: "#1A1D21", // grafite profundo
+      default: "#121416", // quase preto
+      paper: "#1A1D21", // grafite profundo
     },
     text: {
       primary: grey[100],

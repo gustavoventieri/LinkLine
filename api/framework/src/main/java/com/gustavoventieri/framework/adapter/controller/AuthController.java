@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.gustavoventieri.framework.adapter.dto.request.auth.LoginRequestImpl;
-import com.gustavoventieri.framework.adapter.dto.request.auth.RegisterRequestImpl;
+import com.gustavoventieri.framework.adapter.dto.request.auth.LoginRequestDTO;
+import com.gustavoventieri.framework.adapter.dto.request.auth.RegisterRequestDTO;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,21 +41,21 @@ public class AuthController {
      * Receives email and password, authenticates the user, and returns a JWT token
      * via cookie.
      *
-     * @param loginRequestImpl Login data containing email and password.
-     * @param response         HttpServletResponse used to set the cookie with the
-     *                         JWT token.
+     * @param request  Login data containing email and password.
+     * @param response HttpServletResponse used to set the cookie with the
+     *                 JWT token.
      * @return HTTP response with success message.
      */
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody @Valid LoginRequestImpl loginRequestImpl,
+    public ResponseEntity<String> login(@RequestBody @Valid LoginRequestDTO request,
             HttpServletResponse response) {
-        log.info("Login attempt for email: {}", loginRequestImpl.email());
+        log.info("Login attempt for email: {}", request.email());
 
-        String token = authService.login(loginRequestImpl.email(), loginRequestImpl.password());
+        String token = authService.login(request.email(), request.password());
 
         setTokenCookie(response, token);
 
-        log.info("Login successful for email: {}", loginRequestImpl.email());
+        log.info("Login successful for email: {}", request.email());
         return ResponseEntity.status(HttpStatus.OK).body("User logged in successfully");
     }
 
@@ -84,26 +84,39 @@ public class AuthController {
      * Validates the verification code, creates the user, and returns a JWT token
      * via cookie.
      *
-     * @param registerRequestImpl Registration data containing email, code, and
-     *                            avatar URL.
-     * @param response            HttpServletResponse used to set the cookie with
-     *                            the JWT token.
+     * @param request  Registration data containing email, code, and
+     *                 avatar URL.
+     * @param response HttpServletResponse used to set the cookie with
+     *                 the JWT token.
      * @return HTTP response with success message.
      */
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody @Valid RegisterRequestImpl registerRequestImpl,
+    public ResponseEntity<String> register(@RequestBody @Valid RegisterRequestDTO request,
             HttpServletResponse response) {
-        log.info("Registration attempt for email: {}", registerRequestImpl.email());
+        log.info("Registration attempt for email: {}", request.email());
 
         String token = authService.register(
-                registerRequestImpl.email(),
-                registerRequestImpl.code(),
-                registerRequestImpl.avatarUrl());
+                request.email(),
+                request.code(),
+                request.avatarUrl());
 
         setTokenCookie(response, token);
 
-        log.info("Registration successful for email: {}", registerRequestImpl.email());
+        log.info("Registration successful for email: {}", request.email());
         return ResponseEntity.status(HttpStatus.OK).body("User registered successfully");
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletResponse response) {
+        // Remove o cookie "token" definindo ele com expiração no passado
+        Cookie cookie = new Cookie("token", null);
+        cookie.setHttpOnly(true); // Mesmo que ao criar
+        cookie.setSecure(false); // Se foi criado com HTTPS
+        cookie.setPath("/"); // Igual ao original
+        cookie.setMaxAge(0); // Faz o browser deletar
+        response.addCookie(cookie);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Logged out successfully");
     }
 
     /**

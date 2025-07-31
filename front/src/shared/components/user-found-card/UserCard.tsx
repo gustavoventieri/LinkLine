@@ -15,7 +15,7 @@ import {
   useTheme,
 } from "@mui/material";
 
-export type UserRelationshipStatus = "PENDING" | "ACCEPTED" | null;
+export type UserRelationshipStatus = "PENDING" | "ACCEPTED" | "NOT_FRIEND";
 
 interface UserFoundCardProps {
   username: string;
@@ -63,7 +63,7 @@ export const UserFoundCard = memo(
       }
 
       switch (relationshipStatus) {
-        case null:
+        case "NOT_FRIEND":
           return (
             <Button
               variant="contained"

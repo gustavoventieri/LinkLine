@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.gustavoventieri.framework.adapter.dto.request.auth.email_confirmation.ResendConfirmationEmailCodeRequestImpl;
-import com.gustavoventieri.framework.adapter.dto.request.auth.email_confirmation.SendConfirmationEmailCodeRequestImpl;
-import com.gustavoventieri.framework.adapter.dto.request.auth.email_confirmation.VerifyConfirmationEmailCodeRequestImpl;
+import com.gustavoventieri.framework.adapter.dto.request.auth.email_confirmation.ResendConfirmationEmailCodeRequestDTO;
+import com.gustavoventieri.framework.adapter.dto.request.auth.email_confirmation.SendConfirmationEmailCodeRequestDTO;
+import com.gustavoventieri.framework.adapter.dto.request.auth.email_confirmation.VerifyConfirmationEmailCodeRequestDTO;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -43,7 +43,7 @@ public class EmailConfirmationController {
      */
     @PostMapping("/send")
     public ResponseEntity<String> sendConfirmationCode(
-            @RequestBody @Valid SendConfirmationEmailCodeRequestImpl request) {
+            @RequestBody @Valid SendConfirmationEmailCodeRequestDTO request) {
         log.info("Sending confirmation code to email: {}", request.email());
         emailConfirmationService.initiateConfirmationEmail(request.email(), request.username(), request.password());
         return ResponseEntity.status(HttpStatus.OK).body("Verification Email Sent");
@@ -59,7 +59,7 @@ public class EmailConfirmationController {
      */
     @PostMapping("/resend")
     public ResponseEntity<String> resendConfirmationCode(
-            @RequestBody @Valid ResendConfirmationEmailCodeRequestImpl request) {
+            @RequestBody @Valid ResendConfirmationEmailCodeRequestDTO request) {
         log.info("Resending confirmation code to email: {}", request.email());
         emailConfirmationService.resendConfirmationCode(request.email());
         return ResponseEntity.status(HttpStatus.OK).body("Verification Email Re-Sent");
@@ -77,7 +77,7 @@ public class EmailConfirmationController {
      */
     @PostMapping("/verify")
     public ResponseEntity<String> verifyConfirmationCode(
-            @RequestBody @Valid VerifyConfirmationEmailCodeRequestImpl request) {
+            @RequestBody @Valid VerifyConfirmationEmailCodeRequestDTO request) {
         log.info("Verifying confirmation code for email: {}", request.email());
         emailConfirmationService.validateConfirmationCode(request.email(), request.code());
         return ResponseEntity.status(HttpStatus.OK).body("Email Verified");

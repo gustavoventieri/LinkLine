@@ -151,7 +151,9 @@ public class FriendshipRepositoryImpl implements FriendshipRepository {
                                     && friendship.getStatus() == RequestStatus.ACCEPTED)
                             ||
                             (friendship.getSender().getId().equals(userId)
-                                    && friendship.getStatus() == RequestStatus.ACCEPTED))
+                                    && friendship.getStatus() == RequestStatus.ACCEPTED
+                                    || friendship.getSender().getId().equals(userId)
+                                            && friendship.getStatus() == RequestStatus.PENDING))
                     .map(FriendshipMapper::toDomainComplete)
                     .toList();
         } catch (final Exception e) {

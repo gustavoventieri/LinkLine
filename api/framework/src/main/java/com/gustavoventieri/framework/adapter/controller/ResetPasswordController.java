@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.gustavoventieri.framework.adapter.dto.request.auth.reset_password.ResetPasswordRequestImpl;
-import com.gustavoventieri.framework.adapter.dto.request.auth.reset_password.SendResetPasswordCodeRequestImpl;
-import com.gustavoventieri.framework.adapter.dto.request.auth.reset_password.VerifyResetPasswordCodeRequestImpl;
+import com.gustavoventieri.framework.adapter.dto.request.auth.reset_password.ResetPasswordRequestDTO;
+import com.gustavoventieri.framework.adapter.dto.request.auth.reset_password.SendResetPasswordCodeRequestDTO;
+import com.gustavoventieri.framework.adapter.dto.request.auth.reset_password.VerifyResetPasswordCodeRequestDTO;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -39,7 +39,7 @@ public class ResetPasswordController {
      *         sent.
      */
     @PostMapping("/send")
-    public ResponseEntity<String> sendResetPasswordCode(@RequestBody @Valid SendResetPasswordCodeRequestImpl request) {
+    public ResponseEntity<String> sendResetPasswordCode(@RequestBody @Valid SendResetPasswordCodeRequestDTO request) {
         resetPasswordService.initiateResetPassword(request.email());
         return ResponseEntity.status(HttpStatus.OK).body("Reset password code sent");
     }
@@ -54,7 +54,7 @@ public class ResetPasswordController {
      */
     @PostMapping("/resend")
     public ResponseEntity<String> resendResetPasswordCode(
-            @RequestBody @Valid SendResetPasswordCodeRequestImpl request) {
+            @RequestBody @Valid SendResetPasswordCodeRequestDTO request) {
         resetPasswordService.resendResetPasswordCode(request.email());
         return ResponseEntity.status(HttpStatus.OK).body("Reset password code re-sent");
     }
@@ -68,7 +68,7 @@ public class ResetPasswordController {
      */
     @PostMapping("/verify")
     public ResponseEntity<String> verifyResetPasswordCode(
-            @RequestBody @Valid VerifyResetPasswordCodeRequestImpl request) {
+            @RequestBody @Valid VerifyResetPasswordCodeRequestDTO request) {
         resetPasswordService.validateResetPasswordCode(request.email(), request.code());
         return ResponseEntity.status(HttpStatus.OK).body("Reset password code is valid");
     }
@@ -82,7 +82,7 @@ public class ResetPasswordController {
      *         password update.
      */
     @PutMapping("/update")
-    public ResponseEntity<String> updatePassword(@RequestBody @Valid ResetPasswordRequestImpl request) {
+    public ResponseEntity<String> updatePassword(@RequestBody @Valid ResetPasswordRequestDTO request) {
         resetPasswordService.updateUserPasswordByEmail(request.email(), request.password());
         return ResponseEntity.status(HttpStatus.OK).body("Password successfully updated");
     }

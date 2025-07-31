@@ -79,6 +79,7 @@ export const Notifications = () => {
         `/friendship/update/${chatRequestId}`,
         payload
       );
+      window.location.reload();
 
       console.log(payload);
 
@@ -122,7 +123,11 @@ export const Notifications = () => {
           <Box
             width="30%"
             height="100vh"
-            bgcolor={theme.palette.background.paper}
+            bgcolor={
+              theme.palette.mode == "light"
+                ? theme.palette.background.paper
+                : theme.palette.background.default
+            }
             display="flex"
             flexDirection="column"
             p={2}
@@ -161,7 +166,11 @@ export const Notifications = () => {
           flex={1}
           display="flex"
           flexDirection="column"
-          bgcolor={theme.palette.background.default}
+          bgcolor={
+            theme.palette.mode == "light"
+              ? theme.palette.background.default
+              : theme.palette.background.paper
+          }
         >
           <Box
             display="flex"
@@ -210,6 +219,7 @@ export const Notifications = () => {
                 ) : (
                   requests.map((req) => (
                     <RequestCard
+                      theme={theme}
                       avatarUrl={""}
                       sender={req.senderUsername}
                       receiver={req.receiverUsername}
