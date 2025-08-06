@@ -27,7 +27,6 @@ import { BaseLayout } from "../../../shared/layouts";
 import { api } from "../../../shared/services";
 import { useAppThemeContext } from "../../../shared/contexts";
 import { useNavigate } from "react-router-dom";
-import { getSearchBarStyle } from "./Chats.styles";
 
 type ChatData = {
   chatId: string;
@@ -62,8 +61,6 @@ export const Chats = () => {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [showIcon, setShowIcon] = useState<boolean>(true);
-
-  const searchBarStyle = getSearchBarStyle(theme);
 
   useEffect(() => {
     const getAllChats = async () => {
@@ -142,7 +139,20 @@ export const Chats = () => {
             }
             sx={{ border: "1px solid primary" }}
           >
-            <Box sx={searchBarStyle}>
+            <Box
+              sx={{
+                p: "12px 4px",
+                display: "flex",
+                boxShadow: 3,
+                alignItems: "center",
+                mb: theme.breakpoints.down("md") ? 2 : 5,
+                borderRadius: 2,
+                backgroundColor:
+                  theme.palette.mode == "light"
+                    ? theme.palette.background.default
+                    : theme.palette.background.paper,
+              }}
+            >
               <SearchIcon sx={{ ml: 2, color: theme.palette.primary.main }} />
               <InputBase
                 sx={{ ml: 2, width: "100%" }}

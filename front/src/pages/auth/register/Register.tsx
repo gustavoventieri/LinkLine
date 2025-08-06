@@ -1,88 +1,61 @@
 import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Grid,
+  IconButton,
+  InputAdornment,
+  Link,
+  Paper,
+  Snackbar,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import {
   LockPersonOutlined,
   MailOutline,
   PersonOutline,
-  VisibilityOffOutlined,
-  VisibilityOutlined,
+  Visibility,
+  VisibilityOff,
 } from "@mui/icons-material";
-import {
-  Grid,
-  Button,
-  Box,
-  TextField,
-  Typography,
-  InputAdornment,
-  IconButton,
-  useMediaQuery,
-  Theme,
-  Link,
-  CircularProgress,
-  Snackbar,
-  Alert,
-  useTheme,
-} from "@mui/material";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-
-import { api } from "../../../shared/services";
 import { useNavigate } from "react-router-dom";
-import {
-  getContainerStyle,
-  getIconStyle,
-  getInputStyle,
-  getLogoStyle,
-  getTitleStyle,
-} from "./Register.styles";
+import { api } from "../../../shared/services";
 
+// Esquema de validação com Yup
 const schema = yup.object().shape({
-  username: yup.string().required("Username is required"),
-  email: yup.string().email("Invalid email").required("Email is required"),
+  username: yup.string().required("O nome de usuário é obrigatório"),
+  email: yup.string().email("Email inválido").required("O email é obrigatório"),
   password: yup
     .string()
-    .required("Password is required")
-    .min(6, "Password must be at least 6 characters"),
+    .required("A senha é obrigatória")
+    .min(6, "A senha deve ter pelo menos 6 caracteres"),
   confirmPassword: yup
     .string()
-    .required("Confirm your password")
-    .oneOf([yup.ref("password")], "Passwords must match"),
+    .required("Confirme sua senha")
+    .oneOf([yup.ref("password")], "As senhas devem ser iguais"),
 });
 
 type FormData = yup.InferType<typeof schema>;
 
 export const Register = () => {
-  const mdDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
-  const lgDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("lg"));
-  const xxlUp = useMediaQuery((theme: Theme) => theme.breakpoints.up("xxl"));
-  const usernameRef = useRef<HTMLInputElement>(null);
-  const navigate = useNavigate();
   const theme = useTheme();
+  const navigate = useNavigate();
+  const isMdDown = useMediaQuery(theme.breakpoints.down("md"));
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Estado para o Snackbar
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [showPassword, setShowPassword] = useState<"" | "password">("password");
-  const [showConfirmPassword, setShowConfirmPassword] = useState<
-    "" | "password"
-  >("password");
-  const [loading, setLoading] = useState(false);
-
-  const inputStyle = getInputStyle(theme);
-  const iconStyle = getIconStyle(theme);
-  const contaienrStyle = getContainerStyle(mdDown, theme);
-  const logoStyle = getLogoStyle(xxlUp, theme);
-  const titleStyle = getTitleStyle(theme);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        await api.get("/auth/isAuth");
-        navigate("/chats", { replace: true });
-      } catch {}
-    };
-    checkAuth();
-    usernameRef.current?.focus();
-  }, [navigate]);
 
   const {
     register,
@@ -90,9 +63,22 @@ export const Register = () => {
     formState: { errors },
   } = useForm<FormData>({ resolver: yupResolver(schema) });
 
+  // Verifica se o usuário já está autenticado
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        await api.get("/auth/isAuth");
+        navigate("/chats", { replace: true });
+      } catch {
+        // O usuário não está autenticado, pode permanecer na página de registro
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
   const onSubmit = async (data: FormData) => {
+    setIsLoading(true);
     try {
-      setLoading(true);
       const response = await api.post("/auth/email-confirmation/send", {
         username: data.username.toLowerCase(),
         email: data.email,
@@ -105,202 +91,252 @@ export const Register = () => {
         navigate("/email-verification");
       }
     } catch (error: any) {
-      setErrorMessage(error.response?.data.message || "Erro desconhecido");
+      setErrorMessage(
+        error.response?.data?.message || "Ocorreu um erro desconhecido."
+      );
       setSnackbarOpen(true);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  return (
-    <Grid container justifyContent="center" alignItems="center" height="100vh">
-      <Grid size={{ xs: 12, sm: 12, md: 8, lg: 10 }}>
-        <Box
-          display="flex"
-          flexDirection={mdDown ? "column" : "row"}
-          justifyContent="center"
-          alignItems="stretch"
-          height={mdDown ? "100vh" : "88vh"}
-          sx={contaienrStyle}
-        >
-          {!lgDown && (
-            <Box
-              width="50%"
-              display="flex"
-              flexDirection="column"
-              justifyContent="center"
-              alignItems="center"
-              ml={4}
-            >
-              <Typography sx={logoStyle}>Link Line</Typography>
-            </Box>
-          )}
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
+  };
 
-          <Box
-            flex={1}
-            display="flex"
-            flexDirection="column"
-            justifyContent="center"
-            alignItems="center"
-            px={5}
-            gap={5}
+  return (
+    <Box
+      sx={{
+        height: "100vh",
+        backgroundColor: theme.palette.background.default,
+      }}
+    >
+      <Grid container sx={{ height: "100%" }}>
+        {/* Coluna Esquerda - Branding */}
+        {!isMdDown && (
+          <Grid
+            size={{ md: 4 }}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              bgcolor: "primary.main",
+              color: "#fff",
+              p: 4,
+            }}
+          >
+            <Box textAlign="center">
+              <Typography
+                sx={{
+                  fontFamily: '"Irish Grover", cursive',
+                  fontSize: 80,
+                  color: "white",
+                  userSelect: "none",
+                }}
+              >
+                Link Line
+              </Typography>
+              <Typography variant="subtitle1" mt={1}>
+                Crie sua conta e conecte-se com seus amigos.
+              </Typography>
+            </Box>
+          </Grid>
+        )}
+
+        {/* Coluna Direita - Formulário de Registro */}
+        <Grid
+          size={{ xs: 12, md: 8 }}
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            p: 4,
+          }}
+        >
+          <Paper
+            elevation={isMdDown ? 0 : 3}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              width: "100%",
+              maxWidth: 500,
+              p: isMdDown ? 1 : 4,
+              justifyContent: "center",
+              borderRadius: 3,
+              bgcolor: isMdDown ? "transparent" : undefined,
+            }}
           >
             <Typography
-              fontSize={mdDown ? 26 : 30}
-              fontWeight={900}
-              mt={mdDown ? -8 : 0}
+              variant="h5"
               align="center"
-              color={titleStyle}
+              fontWeight="bold"
+              gutterBottom
+              color={
+                theme.palette.mode === "light"
+                  ? theme.palette.primary.main
+                  : "white"
+              }
             >
-              Register Account
+              Criar Conta
             </Typography>
 
-            <Box
-              component="form"
-              onSubmit={handleSubmit(onSubmit)}
-              width="90%"
-              display="flex"
-              flexDirection="column"
-              gap={4}
-            >
-              {[
-                {
-                  name: "username",
-                  label: "Username",
-                  icon: <PersonOutline sx={iconStyle} />,
-                  ref: usernameRef,
-                },
-                {
-                  name: "email",
-                  label: "Email",
-                  icon: <MailOutline sx={iconStyle} />,
-                },
-                {
-                  name: "password",
-                  label: "Password",
-                  icon: <LockPersonOutlined sx={iconStyle} />,
-                  type: showPassword,
-                  endIcon: (
-                    <IconButton
-                      onClick={() =>
-                        setShowPassword((p) =>
-                          p === "password" ? "" : "password"
-                        )
-                      }
-                    >
-                      {showPassword === "" ? (
-                        <VisibilityOffOutlined sx={iconStyle} />
-                      ) : (
-                        <VisibilityOutlined sx={iconStyle} />
-                      )}
-                    </IconButton>
+            <form onSubmit={handleSubmit(onSubmit)} noValidate>
+              <TextField
+                fullWidth
+                label="Nome de usuário"
+                {...register("username")}
+                margin="normal"
+                error={!!errors.username}
+                helperText={errors.username?.message}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonOutline
+                        sx={{ color: theme.palette.primary.main }}
+                      />
+                    </InputAdornment>
                   ),
-                },
-                {
-                  name: "confirmPassword",
-                  label: "Confirm Password",
-                  icon: <LockPersonOutlined sx={iconStyle} />,
-                  type: showConfirmPassword,
-                  endIcon: (
-                    <IconButton
-                      onClick={() =>
-                        setShowConfirmPassword((p) =>
-                          p === "password" ? "" : "password"
-                        )
-                      }
-                    >
-                      {showConfirmPassword === "" ? (
-                        <VisibilityOffOutlined sx={iconStyle} />
-                      ) : (
-                        <VisibilityOutlined sx={iconStyle} />
-                      )}
-                    </IconButton>
+                }}
+              />
+
+              <TextField
+                fullWidth
+                label="Email"
+                type="email"
+                {...register("email")}
+                margin="normal"
+                error={!!errors.email}
+                helperText={errors.email?.message}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <MailOutline sx={{ color: theme.palette.primary.main }} />
+                    </InputAdornment>
                   ),
-                },
-              ].map((field, i) => (
-                <TextField
-                  key={i}
-                  {...register(field.name as keyof FormData)}
-                  inputRef={field.ref}
-                  label={field.label}
-                  type={field.type || "text"}
-                  variant="outlined"
-                  fullWidth
-                  error={!!errors[field.name as keyof FormData]}
-                  helperText={
-                    errors[field.name as keyof FormData]?.message as string
-                  }
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start" sx={{ ml: 1 }}>
-                        {field.icon}
-                      </InputAdornment>
-                    ),
-                    endAdornment: field.endIcon && (
-                      <InputAdornment position="end">
-                        {field.endIcon}
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={inputStyle}
-                />
-              ))}
+                }}
+              />
+
+              <TextField
+                fullWidth
+                label="Senha"
+                type={showPassword ? "text" : "password"}
+                {...register("password")}
+                margin="normal"
+                error={!!errors.password}
+                helperText={errors.password?.message}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockPersonOutlined
+                        sx={{ color: theme.palette.primary.main }}
+                      />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        edge="end"
+                      >
+                        {showPassword ? (
+                          <VisibilityOff
+                            sx={{ color: theme.palette.primary.main }}
+                          />
+                        ) : (
+                          <Visibility
+                            sx={{ color: theme.palette.primary.main }}
+                          />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              <TextField
+                fullWidth
+                label="Confirmar Senha"
+                type={showConfirmPassword ? "text" : "password"}
+                {...register("confirmPassword")}
+                margin="normal"
+                error={!!errors.confirmPassword}
+                helperText={errors.confirmPassword?.message}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockPersonOutlined
+                        sx={{ color: theme.palette.primary.main }}
+                      />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowConfirmPassword((prev) => !prev)}
+                        edge="end"
+                      >
+                        {showConfirmPassword ? (
+                          <VisibilityOff
+                            sx={{ color: theme.palette.primary.main }}
+                          />
+                        ) : (
+                          <Visibility
+                            sx={{ color: theme.palette.primary.main }}
+                          />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
               <Button
                 type="submit"
                 variant="contained"
-                disabled={loading}
                 fullWidth
-                sx={{
-                  borderRadius: 3,
-                  py: 1.4,
-                  "&:hover": {
-                    backgroundColor: theme.palette.primary.dark,
-                  },
-                }}
+                disabled={isLoading}
+                sx={{ mt: 3, py: 1.5 }}
               >
-                {loading ? (
-                  <CircularProgress size={24} sx={{ color: "white" }} />
+                {isLoading ? (
+                  <CircularProgress size={24} color="inherit" />
                 ) : (
-                  "Register"
+                  "Registrar"
                 )}
               </Button>
+            </form>
 
-              <Typography
-                align="left"
-                mt={-2}
-                sx={{ color: theme.palette.text.primary }}
-              >
-                Already have an account?{" "}
+            <Box mt={2} textAlign="center">
+              <Typography>
+                Já tem uma conta?{" "}
                 <Link
                   href="/login"
-                  fontWeight={500}
                   underline="hover"
                   color={theme.palette.primary.light}
                 >
-                  Sign In
+                  Entrar
                 </Link>
               </Typography>
             </Box>
-          </Box>
-        </Box>
+          </Paper>
+        </Grid>
       </Grid>
 
+      {/* Snackbar para erros */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
-        onClose={() => setSnackbarOpen(false)}
+        onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert
-          onClose={() => setSnackbarOpen(false)}
+          onClose={handleCloseSnackbar}
           severity="error"
           variant="filled"
-          sx={{ width: "100%", color: "white", backgroundColor: "red" }}
+          sx={{ width: "100%" }}
         >
           {errorMessage}
         </Alert>
       </Snackbar>
-    </Grid>
+    </Box>
   );
 };

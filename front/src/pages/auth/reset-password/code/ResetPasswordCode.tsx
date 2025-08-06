@@ -20,7 +20,6 @@ import * as yup from "yup";
 import { useAppThemeContext } from "../../../../shared/contexts";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../../../shared/services";
-import { getContainerStyle, getInputStyle } from "./ResetPasswordCode.styles";
 
 const schema = yup.object({
   verificationCode: yup
@@ -45,8 +44,6 @@ export const ResetPasswordCode = () => {
   const [isResendDisabled, setIsResendDisabled] = useState(false);
   const [resendTimer, setResendTimer] = useState(30);
 
-  const containerStyle = getContainerStyle(smDown, mdDown, theme);
-  const inputStyle = getInputStyle();
   const {
     register,
     handleSubmit,
@@ -172,7 +169,12 @@ export const ResetPasswordCode = () => {
           boxShadow={3}
           width="80%"
           height={"50vh"}
-          sx={containerStyle}
+          sx={{
+            borderRadius: smDown ? 0 : 3,
+            overflow: "hidden",
+            boxShadow: smDown ? 0 : 10,
+            backgroundColor: mdDown ? "none" : theme.palette.background.paper,
+          }}
         >
           <form onSubmit={handleSubmit(onSubmit)} style={{ width: "100%" }}>
             <input type="hidden" {...register("verificationCode")} />
@@ -223,7 +225,21 @@ export const ResetPasswordCode = () => {
                         pattern: "[0-9]*",
                         style: { textAlign: "center" },
                       }}
-                      sx={inputStyle}
+                      sx={{
+                        width: {
+                          xs: "2.5rem",
+                          sm: "3.0rem",
+                          md: "3.0rem",
+                        },
+                        "& input": {
+                          fontSize: {
+                            xs: "2rem",
+                            sm: "2.5rem",
+                            md: "2.5rem",
+                          },
+                          padding: 0,
+                        },
+                      }}
                       value={code[index] || ""}
                       onChange={(e) => handleInputChange(index, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(e, index)}

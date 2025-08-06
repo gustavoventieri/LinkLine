@@ -25,11 +25,6 @@ import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 
 import { api } from "../../../../shared/services";
-import {
-  getContainerStyle,
-  getIconStyle,
-  getInputStyle,
-} from "./ResetPasswordUpdate.styles";
 
 const schema = yup.object({
   password: yup
@@ -58,10 +53,6 @@ export const ResetPasswordUpdate = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isResendDisabled, setIsResendDisabled] = useState(false);
   const [resendTimer, setResendTimer] = useState(30);
-
-  const inputStyle = getInputStyle(theme);
-  const containerStyle = getContainerStyle(mdDown, theme);
-  const iconStyle = getIconStyle(theme);
 
   type FormData = yup.InferType<typeof schema>;
 
@@ -155,7 +146,13 @@ export const ResetPasswordUpdate = () => {
           boxShadow={3}
           width="100%"
           height={"60vh"}
-          sx={containerStyle}
+          sx={{
+            borderRadius: mdDown ? 0 : 5,
+            overflowY: "auto",
+            boxShadow: mdDown ? 0 : 10,
+            px: 2,
+            backgroundColor: mdDown ? "none" : theme.palette.background.paper,
+          }}
         >
           <form onSubmit={handleSubmit(onSubmit)} style={{ width: "100%" }}>
             <Box
@@ -197,22 +194,54 @@ export const ResetPasswordUpdate = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start" sx={{ ml: 1 }}>
-                        <LockPersonOutlined sx={iconStyle} />
+                        <LockPersonOutlined
+                          sx={{
+                            color: theme.palette.primary.main,
+                            width: 26,
+                            height: 26,
+                          }}
+                        />
                       </InputAdornment>
                     ),
                     endAdornment: (
                       <InputAdornment position="end" sx={{ mr: 1 }}>
                         <IconButton onClick={toggleShowPassword}>
                           {showPassword === "" ? (
-                            <VisibilityOffOutlined sx={iconStyle} />
+                            <VisibilityOffOutlined
+                              sx={{
+                                color: theme.palette.primary.main,
+                                width: 26,
+                                height: 26,
+                              }}
+                            />
                           ) : (
-                            <VisibilityOutlined sx={iconStyle} />
+                            <VisibilityOutlined
+                              sx={{
+                                color: theme.palette.primary.main,
+                                width: 26,
+                                height: 26,
+                              }}
+                            />
                           )}
                         </IconButton>
                       </InputAdornment>
                     ),
                   }}
-                  sx={inputStyle}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 3,
+                      height: 65,
+                      "& fieldset": {
+                        borderColor: theme.palette.primary.main,
+                      },
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: theme.palette.primary.main,
+                    },
+                    "& .MuiInputLabel-shrink": {
+                      color: theme.palette.text.primary,
+                    },
+                  }}
                 />
                 <TextField
                   {...register("confirmPassword")}
@@ -225,22 +254,54 @@ export const ResetPasswordUpdate = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start" sx={{ ml: 1 }}>
-                        <LockPersonOutlined sx={iconStyle} />
+                        <LockPersonOutlined
+                          sx={{
+                            color: theme.palette.primary.main,
+                            width: 26,
+                            height: 26,
+                          }}
+                        />
                       </InputAdornment>
                     ),
                     endAdornment: (
                       <InputAdornment position="end" sx={{ mr: 1 }}>
                         <IconButton onClick={toggleConfirmShowPassword}>
                           {showConfirmPassword === "" ? (
-                            <VisibilityOffOutlined sx={iconStyle} />
+                            <VisibilityOffOutlined
+                              sx={{
+                                color: theme.palette.primary.main,
+                                width: 26,
+                                height: 26,
+                              }}
+                            />
                           ) : (
-                            <VisibilityOutlined sx={iconStyle} />
+                            <VisibilityOutlined
+                              sx={{
+                                color: theme.palette.primary.main,
+                                width: 26,
+                                height: 26,
+                              }}
+                            />
                           )}
                         </IconButton>
                       </InputAdornment>
                     ),
                   }}
-                  sx={inputStyle}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 3,
+                      height: 65,
+                      "& fieldset": {
+                        borderColor: theme.palette.primary.main,
+                      },
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: theme.palette.primary.main,
+                    },
+                    "& .MuiInputLabel-shrink": {
+                      color: theme.palette.text.primary,
+                    },
+                  }}
                 />
 
                 <Button

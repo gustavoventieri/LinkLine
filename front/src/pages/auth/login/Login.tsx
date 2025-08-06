@@ -1,293 +1,297 @@
 import {
   LockPersonOutlined,
   MailOutline,
-  VisibilityOffOutlined,
-  VisibilityOutlined,
+  Visibility,
+  VisibilityOff,
 } from "@mui/icons-material";
 import {
-  Grid,
-  Button,
+  Alert,
   Box,
+  Button,
+  CircularProgress,
+  Grid,
+  IconButton,
+  InputAdornment,
+  Link,
+  Paper,
+  Snackbar,
   TextField,
   Typography,
-  InputAdornment,
-  IconButton,
   useMediaQuery,
-  Theme,
-  Link,
-  Snackbar,
-  Alert,
-  CircularProgress,
   useTheme,
 } from "@mui/material";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useForm, Controller } from "react-hook-form";
-import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-
-import {
-  buttonStyle,
-  getContainerStyle,
-  getFormStyle,
-  getIconStyle,
-  getInputStyle,
-  getLinkStyle,
-  getLogoStyle,
-  getTitleStyle,
-} from "./Login.styles";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import * as yup from "yup";
 import { api } from "../../../shared/services";
 
-const loginSchema = yup.object().shape({
-  email: yup
-    .string()
-    .email("E-mail inválido")
-    .required("O e-mail é obrigatório"),
-  password: yup
-    .string()
-    .min(6, "Mínimo 6 caracteres")
-    .required("A senha é obrigatória"),
-});
+// Esquema de validação para o formulário
+const schema = yup
+  .object({
+    email: yup.string().email("Email inválido").required("Email é obrigatório"),
+    password: yup
+      .string()
+      .min(6, "A senha deve ter pelo menos 6 caracteres")
+      .required("Senha é obrigatória"),
+  })
+  .required();
 
-type LoginFormData = yup.InferType<typeof loginSchema>;
+type FormData = yup.InferType<typeof schema>;
 
 export const Login = () => {
-  const smDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
-  const mdDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
-  const lgDown = useMediaQuery((theme: Theme) => theme.breakpoints.down("lg"));
-  const xxlUp = useMediaQuery((theme: Theme) => theme.breakpoints.up("xxl"));
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: yupResolver(schema),
+  });
 
-  const [showPassword, setShowPassword] = useState<"" | "password">("password");
   const [isLoading, setIsLoading] = useState(false);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const navigate = useNavigate();
   const theme = useTheme();
+  const isMdDown = useMediaQuery(theme.breakpoints.down("md"));
 
-  const inputStyle = getInputStyle(theme);
-  const iconsStyles = getIconStyle(theme);
-  const linkStyle = getLinkStyle(theme);
-  const titleStyle = getTitleStyle(theme, mdDown);
-  const formStyle = getFormStyle(smDown);
-  const containerStyle = getContainerStyle(mdDown, theme);
-  const logoStyle = getLogoStyle(xxlUp, theme);
-
-  const {
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: yupResolver(loginSchema),
-  });
-
+  // Efeito para verificar se o usuário já está autenticado
   useEffect(() => {
     const checkAuth = async () => {
       try {
         await api.get("/auth/isAuth");
-        navigate("/chats", { replace: true });
+        navigate("/chat", { replace: true });
       } catch (error) {
-        console.warn("User is not authenticated", error);
+        console.warn("Usuário não autenticado", error);
       }
     };
-
     checkAuth();
   }, [navigate]);
 
-  const toggleShowPassword = () => {
-    setShowPassword((prev) => (prev === "password" ? "" : "password"));
-  };
-
-  const redirectToResetPassword = () => {
-    localStorage.setItem("authSession", "true");
-    navigate("/reset-password/email");
-  };
-
-  const handleLogin = async (data: LoginFormData) => {
+  const onSubmit = async (data: FormData) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      const loginResponse = await api.post("/auth/login", data);
-      if (loginResponse.status === 200) navigate("/chats");
-    } catch (error) {
+      const response = await api.post("/auth/login", data);
+      if (response.status === 200) {
+        navigate("/chat");
+      }
+    } catch (error: any) {
       console.error("Erro ao fazer login:", error);
-      setSnackbarOpen(true);
+      const message =
+        error?.response?.data?.message ||
+        "Erro ao fazer login. Tente novamente.";
+      setErrorMessage(message);
+      setOpenSnackbar(true);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleCloseSnackbar = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenSnackbar(false);
+  };
+
   return (
-    <Grid container justifyContent="center" alignItems="center" height="100vh">
-      <Grid
-        size={{ xs: 12, sm: 12, md: 8, lg: 10 }}
-        display="flex"
-        justifyContent="center"
-        alignItems="start"
-        borderRadius={10}
-      >
-        <Box
-          display="flex"
-          flexDirection="row"
-          alignItems="center"
-          justifyContent="flex-start"
-          width="100%"
-          height={mdDown ? "100vh" : "88vh"}
-          sx={containerStyle}
+    <Box
+      sx={{
+        height: "100vh",
+        backgroundColor: theme.palette.background.default,
+      }}
+    >
+      <Grid container sx={{ height: "100%" }}>
+        {/* Coluna Esquerda: Branding */}
+
+        {/* Coluna Direita: Formulário */}
+        <Grid
+          size={{ xs: 12, md: 8 }}
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            p: 4,
+          }}
         >
-          <Box
-            width={lgDown ? "100%" : "60%"}
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            justifyContent="center"
+          <Paper
+            elevation={isMdDown ? 0 : 3}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              width: "100%",
+              maxWidth: 500,
+              p: isMdDown ? 1 : 4,
+              justifyContent: "center",
+              borderRadius: 3,
+              gap: 2,
+              bgcolor: isMdDown ? "transparent" : undefined,
+              boxShadow: isMdDown ? "none" : undefined,
+            }}
           >
-            <Box
-              component="form"
-              onSubmit={handleSubmit(handleLogin)}
-              sx={formStyle}
+            <Typography
+              variant="h5"
+              align="center"
+              gutterBottom
+              fontWeight="bold"
+              color={
+                theme.palette.mode === "light"
+                  ? theme.palette.primary.main
+                  : "white"
+              }
             >
-              <Typography sx={titleStyle}>Access Your Account</Typography>
+              Acesse sua Conta
+            </Typography>
 
-              <Controller
-                name="email"
-                control={control}
-                defaultValue=""
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Email"
-                    variant="outlined"
-                    error={!!errors.email}
-                    helperText={errors.email?.message}
-                    fullWidth
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start" sx={{ ml: 1 }}>
-                          <MailOutline sx={iconsStyles} />
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={inputStyle}
-                  />
-                )}
+            <form onSubmit={handleSubmit(onSubmit)} noValidate>
+              <TextField
+                fullWidth
+                label="Email"
+                type="email"
+                {...register("email")}
+                margin="normal"
+                error={!!errors.email}
+                helperText={errors.email?.message}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <MailOutline sx={{ color: theme.palette.primary.main }} />
+                    </InputAdornment>
+                  ),
+                }}
               />
 
-              <Controller
-                name="password"
-                control={control}
-                defaultValue=""
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Password"
-                    type={showPassword}
-                    variant="outlined"
-                    error={!!errors.password}
-                    helperText={errors.password?.message}
-                    fullWidth
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start" sx={{ ml: 1 }}>
-                          <LockPersonOutlined sx={iconsStyles} />
-                        </InputAdornment>
-                      ),
-                      endAdornment: (
-                        <InputAdornment position="end" sx={{ mr: 1 }}>
-                          <IconButton onClick={toggleShowPassword} edge="end">
-                            {showPassword === "" ? (
-                              <VisibilityOffOutlined sx={iconsStyles} />
-                            ) : (
-                              <VisibilityOutlined sx={iconsStyles} />
-                            )}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={inputStyle}
-                  />
-                )}
+              <TextField
+                fullWidth
+                label="Senha"
+                type={showPassword ? "text" : "password"}
+                {...register("password")}
+                margin="normal"
+                error={!!errors.password}
+                helperText={errors.password?.message}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockPersonOutlined
+                        sx={{ color: theme.palette.primary.main }}
+                      />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        edge="end"
+                      >
+                        {showPassword ? (
+                          <VisibilityOff
+                            sx={{ color: theme.palette.primary.main }}
+                          />
+                        ) : (
+                          <Visibility
+                            sx={{ color: theme.palette.primary.main }}
+                          />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
 
-              <Typography
-                fontSize={smDown ? 12 : 14}
-                align="left"
-                ml={0.5}
-                color={theme.palette.text.primary}
-              >
-                Forgot your password?{" "}
+              <Box textAlign="right" sx={{ mt: 1 }}>
                 <Link
-                  type="button"
-                  onClick={redirectToResetPassword}
+                  href="/reset-password"
                   underline="hover"
-                  fontWeight={700}
-                  sx={linkStyle}
+                  variant="body2"
+                  color={theme.palette.primary.light}
                 >
-                  Reset Password
+                  Esqueceu sua senha?
                 </Link>
-              </Typography>
+              </Box>
 
               <Button
                 type="submit"
                 variant="contained"
                 fullWidth
+                sx={{ mt: 2, py: 1.5, fontSize: 16 }}
                 disabled={isLoading}
-                sx={buttonStyle}
               >
                 {isLoading ? (
                   <CircularProgress size={24} color="inherit" />
                 ) : (
-                  "Access"
+                  "Entrar"
                 )}
               </Button>
+            </form>
 
-              <Typography
-                fontSize={smDown ? 12 : 14}
-                align="left"
-                ml={0.5}
-                color={theme.palette.text.primary}
-              >
-                Don’t have an account?{" "}
+            <Box mt={2} textAlign="center">
+              <Typography>
+                Não tem uma conta?{" "}
                 <Link
                   href="/register"
                   underline="hover"
-                  sx={linkStyle}
-                  fontWeight={700}
+                  color={theme.palette.primary.light}
                 >
-                  Sign Up
+                  Cadastre-se
                 </Link>
               </Typography>
             </Box>
-          </Box>
+          </Paper>
+        </Grid>
 
-          {!lgDown && (
-            <Box
-              width="70%"
-              display="flex"
-              flexDirection="column"
-              alignItems="center"
-              justifyContent="center"
-              mr={5}
-            >
-              <Typography sx={logoStyle}>Link Line</Typography>
+        {!isMdDown && (
+          <Grid
+            size={{ md: 4 }}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              bgcolor: "primary.main",
+              color: "#fff",
+              p: 4,
+            }}
+          >
+            <Box textAlign="center">
+              <Typography
+                sx={{
+                  fontFamily: '"Irish Grover", cursive',
+                  fontSize: 80,
+                  color: "white",
+                  userSelect: "none",
+                }}
+              >
+                Link Line
+              </Typography>
+              <Typography variant="subtitle1" mt={1}>
+                Crie sua conta e conecte-se com seus amigos.
+              </Typography>
             </Box>
-          )}
-        </Box>
+          </Grid>
+        )}
       </Grid>
 
+      {/* Snackbar para exibir mensagens de erro */}
       <Snackbar
-        open={snackbarOpen}
+        open={openSnackbar}
         autoHideDuration={6000}
-        onClose={() => setSnackbarOpen(false)}
+        onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert
-          onClose={() => setSnackbarOpen(false)}
+          onClose={handleCloseSnackbar}
           severity="error"
+          sx={{ width: "100%" }}
           variant="filled"
-          sx={{ width: "100%", color: "white", backgroundColor: "red" }}
         >
-          Invalid Credentials
+          {errorMessage}
         </Alert>
       </Snackbar>
-    </Grid>
+    </Box>
   );
 };

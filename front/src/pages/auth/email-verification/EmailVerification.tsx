@@ -19,16 +19,6 @@ import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../../shared/services";
 
-import {
-  getContainerStyle,
-  getInputStyle,
-  getButtonStyle,
-  getTitleStyle,
-  getSubtitleStyle,
-  getResendLinkStyle,
-  getSnackbarStyle,
-} from "./EmailVerification.styles";
-
 const schema = yup.object({
   verificationCode: yup
     .string()
@@ -50,14 +40,6 @@ export const EmailVerification = () => {
   const [resendTimer, setResendTimer] = useState(30);
   const [isLoading, setIsLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-
-  const containerStyle = getContainerStyle(smDown, mdDown, theme);
-  const inputStyle = getInputStyle(theme);
-  const buttonStyle = getButtonStyle(theme);
-  const titleStyle = getTitleStyle(theme, mdDown);
-  const subtitleStyle = getSubtitleStyle(theme, mdDown);
-  const resendLinkStyle = getResendLinkStyle(isResendDisabled, theme);
-  const snackbarStyle = getSnackbarStyle;
 
   const {
     register,
@@ -172,7 +154,12 @@ export const EmailVerification = () => {
           justifyContent="center"
           width="80%"
           height="50vh"
-          sx={containerStyle}
+          sx={{
+            borderRadius: smDown ? 0 : 3,
+            overflow: "hidden",
+            boxShadow: mdDown ? 0 : 10,
+            backgroundColor: mdDown ? "none" : theme.palette.background.paper,
+          }}
         >
           <form onSubmit={handleSubmit(onSubmit)} style={{ width: "100%" }}>
             <input type="hidden" {...register("verificationCode")} />
@@ -190,8 +177,32 @@ export const EmailVerification = () => {
                 flexDirection="column"
                 gap={8}
               >
-                <Typography sx={titleStyle}>Verifying Your Email</Typography>
-                <Typography sx={subtitleStyle}>
+                <Typography
+                  sx={{
+                    fontSize: mdDown ? 24 : 28,
+                    fontWeight: 900,
+                    mb: -5,
+                    textAlign: "center" as const,
+                    color:
+                      theme.palette.mode === "light"
+                        ? theme.palette.primary.main
+                        : theme.palette.common.white,
+                  }}
+                >
+                  Verifying Your Email
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: mdDown ? 12 : 16,
+                    mb: -5,
+                    fontWeight: 400,
+                    textAlign: "center" as const,
+                    color:
+                      theme.palette.mode === "light"
+                        ? theme.palette.text.primary
+                        : theme.palette.common.white,
+                  }}
+                >
                   Check your email — we’ve sent you a code to verify your email!
                 </Typography>
 
@@ -205,7 +216,15 @@ export const EmailVerification = () => {
                         inputMode: "numeric",
                         pattern: "[0-9]*",
                       }}
-                      sx={inputStyle}
+                      sx={{
+                        width: { xs: "2.5rem", sm: "3rem", md: "3rem" },
+                        "& input": {
+                          fontSize: { xs: "2rem", sm: "2.5rem", md: "2.5rem" },
+                          padding: 0,
+                          textAlign: "center" as const,
+                          color: theme.palette.text.primary,
+                        },
+                      }}
                       value={c}
                       onChange={(e) => handleInputChange(i, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(e, i)}
@@ -230,7 +249,13 @@ export const EmailVerification = () => {
                     onClick={onResend}
                     underline="hover"
                     disabled={isResendDisabled}
-                    sx={resendLinkStyle}
+                    sx={{
+                      color: isResendDisabled
+                        ? "gray"
+                        : theme.palette.primary.light,
+                      fontWeight: 500,
+                      mt: -0.3,
+                    }}
                   >
                     Resend code
                   </Link>
@@ -251,7 +276,14 @@ export const EmailVerification = () => {
                   fullWidth
                   type="submit"
                   variant="contained"
-                  sx={buttonStyle}
+                  sx={{
+                    marginTop: -4,
+                    borderRadius: 3,
+                    paddingY: 1.4,
+                    "&:hover": {
+                      backgroundColor: theme.palette.primary.dark,
+                    },
+                  }}
                   disabled={isLoading || code.some((x) => !x)}
                 >
                   {isLoading ? (
@@ -276,7 +308,7 @@ export const EmailVerification = () => {
           onClose={() => setSnackbarOpen(false)}
           severity="error"
           variant="filled"
-          sx={snackbarStyle}
+          sx={{ width: "100%", color: "white", backgroundColor: "red" }}
         >
           Expired or Invalid Code. Please try again.
         </Alert>

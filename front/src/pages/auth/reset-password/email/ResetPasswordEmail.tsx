@@ -20,11 +20,7 @@ import { useNavigate } from "react-router-dom";
 import { MailOutline } from "@mui/icons-material";
 
 import { api } from "../../../../shared/services";
-import {
-  getBoxFormStyle,
-  getTextFieldStyle,
-  submitButtonStyle,
-} from "./ResetPasswordEmail.styles";
+
 
 const schema = yup.object({
   email: yup.string().email().required("Email is required"),
@@ -97,11 +93,6 @@ export const ResetPasswordEmail = () => {
     }
   };
 
-  // Variáveis de estilos
-  const boxFormStyle = getBoxFormStyle(mdDown, theme);
-  const textFieldStyle = getTextFieldStyle(theme);
-  const buttonStyle = submitButtonStyle(theme);
-
   return (
     <Grid
       container
@@ -127,7 +118,13 @@ export const ResetPasswordEmail = () => {
           boxShadow={3}
           width="100%"
           height={"60vh"}
-          sx={boxFormStyle}
+          sx={{
+            borderRadius: mdDown ? 0 : 5,
+            overflowY: "auto",
+            boxShadow: mdDown ? 0 : 10,
+            px: 2,
+            backgroundColor: mdDown ? "none" : theme.palette.background.paper,
+          }}
         >
           <form onSubmit={handleSubmit(onSubmit)} style={{ width: "100%" }}>
             <Box
@@ -176,7 +173,21 @@ export const ResetPasswordEmail = () => {
                   helperText={errors.email?.message}
                   variant="outlined"
                   fullWidth
-                  sx={textFieldStyle}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 3,
+                      height: 65,
+                      "& fieldset": {
+                        borderColor: theme.palette.primary.main,
+                      },
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: theme.palette.primary.main,
+                    },
+                    "& .MuiInputLabel-shrink": {
+                      color: theme.palette.text.primary,
+                    },
+                  }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start" sx={{ ml: 1 }}>
@@ -194,7 +205,13 @@ export const ResetPasswordEmail = () => {
                   variant="contained"
                   color="primary"
                   fullWidth
-                  sx={buttonStyle}
+                  sx={{
+                    borderRadius: 3,
+                    paddingY: 1.8,
+                    "&:hover": {
+                      backgroundColor: theme.palette.primary.dark,
+                    },
+                  }}
                   disabled={isLoading}
                 >
                   {isLoading ? (

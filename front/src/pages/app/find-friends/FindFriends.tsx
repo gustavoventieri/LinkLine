@@ -18,11 +18,6 @@ import {
   UserFoundCard,
   UserRelationshipStatus,
 } from "../../../shared/components";
-import {
-  getDiversityIcon,
-  getDiversityText,
-  getSearchInput,
-} from "./FindFriends.styles";
 
 interface PotentialFriend {
   username: string;
@@ -47,10 +42,6 @@ export const FindFriends = () => {
   const [error, setError] = useState<string | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-
-  const diversityIconStyle = getDiversityIcon(theme);
-  const diversityTextStyle = getDiversityText(theme);
-  const searchInputStyle = getSearchInput(theme, mdDown, smDown);
 
   const debounceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const debounce = <F extends (...args: any[]) => any>(
@@ -165,10 +156,25 @@ export const FindFriends = () => {
               mb={2}
               gap={1}
             >
-              <Diversity3Rounded sx={diversityIconStyle} />
+              <Diversity3Rounded
+                sx={{
+                  width: 80,
+                  height: 80,
+                  color:
+                    theme.palette.mode === "dark"
+                      ? theme.palette.primary.main
+                      : theme.palette.primary.dark,
+                }}
+              />
               <Typography
                 variant="h6"
-                sx={diversityTextStyle}
+                sx={{
+                  color:
+                    theme.palette.mode === "dark"
+                      ? "grey.300"
+                      : "text.secondary",
+                  textAlign: "center",
+                }}
                 textAlign="center"
               >
                 Pessoas que você deve conhecer
@@ -243,7 +249,33 @@ export const FindFriends = () => {
                   </InputAdornment>
                 ),
               }}
-              sx={searchInputStyle}
+              sx={{
+                width: mdDown ? "100%" : "80%",
+                boxShadow: 5,
+                borderRadius: "10px",
+                mx: smDown ? 1 : 3,
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "10px",
+                  height: "60px",
+                  backgroundColor:
+                    theme.palette.mode === "light"
+                      ? theme.palette.background.paper
+                      : theme.palette.background.default,
+
+                  "& fieldset": { borderColor: "transparent" },
+                  "&:hover fieldset": {
+                    borderColor: theme.palette.action.hover,
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "primary.main",
+                    borderWidth: "1px",
+                  },
+                },
+                "& .MuiInputBase-input": {
+                  paddingTop: "12px",
+                  paddingBottom: "12px",
+                },
+              }}
             />
           </Box>
 
