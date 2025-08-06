@@ -79,14 +79,11 @@ export const Notifications = () => {
         `/friendship/update/${chatRequestId}`,
         payload
       );
-      window.location.reload();
-
-      console.log(payload);
 
       if (response.status === 200) {
         if (newStatus === "ACCEPTED") {
-          console.log("Deu Certo");
-          //await handleCreatePrivateChat(username);
+          await handleCreatePrivateChat(username);
+          window.location.reload();
         }
       } else {
         console.warn(
@@ -107,7 +104,7 @@ export const Notifications = () => {
 
   const handleCreatePrivateChat = async (username: string) => {
     try {
-      await api.post("/private-chat/create", { username });
+      await api.post("/chat/private/create", { username });
     } catch (error: any) {
       console.error(
         "Erro ao criar chat privado:",

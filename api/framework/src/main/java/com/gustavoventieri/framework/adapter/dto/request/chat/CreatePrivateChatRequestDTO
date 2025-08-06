@@ -1,0 +1,15 @@
+package com.gustavoventieri.framework.adapter.dto.request.chat;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CreatePrivateChatRequestDTO {
+
+    @NotBlank(message = "O nome de usuário do alvo não pode ser vazio.")
+    private String targetUsername;
+}

@@ -18,7 +18,7 @@ import { PrivateAppLayout, PrivateAuthLayout } from "./layouts";
 export const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
       <Route element={<PrivateAuthLayout />}>

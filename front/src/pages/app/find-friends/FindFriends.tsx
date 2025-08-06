@@ -125,7 +125,9 @@ export const FindFriends = () => {
     try {
       if (status === "NOT_FRIEND") {
         await api.post("/friendship/create", { friendUsername: username });
+
         fetchPotentialFriends(searchTerm);
+        window.location.reload();
       }
     } catch (err: any) {
       setErrorMessage(err.response?.data?.error || "Erro inesperado");

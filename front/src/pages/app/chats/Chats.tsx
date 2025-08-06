@@ -27,14 +27,14 @@ import { BaseLayout } from "../../../shared/layouts";
 import { api } from "../../../shared/services";
 import { useAppThemeContext } from "../../../shared/contexts";
 import { useNavigate } from "react-router-dom";
+import { useUsername } from "../../../shared/contexts/UsernameContext";
 
 type ChatData = {
   chatId: string;
   createdAt: string;
   participant: {
-    chatNameForMember: string;
-    avatarUrl?: string;
-    userId: string;
+    username: string;
+    avatarUrl: string;
   };
 };
 
@@ -56,7 +56,7 @@ export const Chats = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedChat, setSelectedChat] = useState<ChatData | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
+  const { username } = useUsername();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [newMessage, setNewMessage] = useState("");
@@ -65,7 +65,8 @@ export const Chats = () => {
   useEffect(() => {
     const getAllChats = async () => {
       try {
-        setChats([]);
+        const response = await api.get("/chats/private/getAll");
+        setChats(response.data.chats || []);
       } catch (err) {
         console.error("Erro ao buscar chats:", err);
         setChats([]);
@@ -100,9 +101,7 @@ export const Chats = () => {
   };
 
   const filteredChats = chats.filter((chat) =>
-    chat.participant?.chatNameForMember
-      ?.toLowerCase()
-      .includes(search.toLowerCase())
+    chat.participant?.username?.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleSendMessage = async () => {
@@ -208,7 +207,7 @@ export const Chats = () => {
                   >
                     <ListItemAvatar>
                       <Avatar
-                        sx={{ ml: mdDown ? 0.5 : 0 }}
+                        sx={{ ml: mdDown ? 0.5 : 0, width: 50, height: 50 }}
                         src={chat.participant.avatarUrl}
                       >
                         <Typography
@@ -218,7 +217,7 @@ export const Chats = () => {
                             themeName === "dark" ? "white" : "primary.secondary"
                           }
                         >
-                          {chat.participant.chatNameForMember.charAt(0)}
+                          {chat.participant.avatarUrl?.charAt(0)}
                         </Typography>
                       </Avatar>
                     </ListItemAvatar>
@@ -231,7 +230,7 @@ export const Chats = () => {
                             themeName === "dark" ? "white" : "primary.secondary"
                           }
                         >
-                          {chat.participant.chatNameForMember}
+                          {chat.participant.username}
                         </Typography>
                       }
                     />
@@ -243,17 +242,32 @@ export const Chats = () => {
         )}
 
         {(!mdDown || selectedChat) && (
-          <Box flex={1} display="flex" flexDirection="column">
+          <Box
+            flex={1}
+            display="flex"
+            flexDirection="column"
+            bgcolor={
+              theme.palette.mode === "light"
+                ? theme.palette.background.default
+                : theme.palette.background.paper
+            }
+            px={2}
+          >
             {selectedChat && (
               <Box
-                sx={{ backgroundColor: theme.palette.background.paper }}
+                sx={{
+                  backgroundColor:
+                    theme.palette.mode === "light"
+                      ? theme.palette.background.paper
+                      : theme.palette.background.default,
+                }}
                 display="flex"
                 alignItems="center"
                 justifyContent="space-between"
-                mt={mdDown ? 0 : 3}
-                py={2}
+                mt={3}
+                py={1.5}
                 boxShadow={3}
-                borderRadius={mdDown ? 0 : 2}
+                borderRadius={2}
               >
                 <Box display="flex" alignItems="center">
                   {mdDown && (
@@ -261,7 +275,7 @@ export const Chats = () => {
                       <ArrowBack />
                     </IconButton>
                   )}
-                  <Avatar src={"a"} sx={{ ml: mdDown ? 0.5 : 0 }}>
+                  <Avatar src={""} sx={{ ml: mdDown ? 0.5 : 2 }}>
                     <Typography
                       fontSize={16}
                       fontWeight="bold"
@@ -269,7 +283,7 @@ export const Chats = () => {
                         themeName === "dark" ? "white" : "primary.secondary"
                       }
                     >
-                      {"a"}
+                      {selectedChat.participant.avatarUrl.charAt(0)}
                     </Typography>
                   </Avatar>
                   <Typography
@@ -277,10 +291,10 @@ export const Chats = () => {
                     fontWeight={700}
                     sx={{ color: theme.palette.text.primary }}
                   >
-                    {"a"}
+                    {selectedChat.participant.username}
                   </Typography>
                 </Box>
-                <IconButton>
+                <IconButton sx={{mr: 2}}>
                   <MoreVertIcon />
                 </IconButton>
               </Box>
@@ -347,16 +361,14 @@ export const Chats = () => {
 
             {/* Campo de envio */}
             {selectedChat && (
-              <Box
-                display="flex"
-                py={2}
-                px={mdDown ? 1 : 0}
-                pl={mdDown ? 2.5 : 0}
-              >
+              <Box display="flex" py={2}>
                 <TextField
                   fullWidth
                   sx={{
-                    backgroundColor: theme.palette.background.paper,
+                    backgroundColor:
+                      theme.palette.mode === "light"
+                        ? theme.palette.background.paper
+                        : theme.palette.background.default,
                     borderRadius: 2,
                     boxShadow: 4,
                     "& .MuiOutlinedInput-root": {

@@ -6,7 +6,7 @@ export const Settings = () => {
 
   const handleLogout = async () => {
     await api.post("/auth/logout");
-    navigate("/login");
+    navigate("/");
   };
 
   return (

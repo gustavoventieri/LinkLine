@@ -63,7 +63,7 @@ export const Login = () => {
     const checkAuth = async () => {
       try {
         await api.get("/auth/isAuth");
-        navigate("/chat", { replace: true });
+        navigate("/chats", { replace: true });
       } catch (error) {
         console.warn("Usuário não autenticado", error);
       }
@@ -76,7 +76,7 @@ export const Login = () => {
     try {
       const response = await api.post("/auth/login", data);
       if (response.status === 200) {
-        navigate("/chat");
+        navigate("/chats");
       }
     } catch (error: any) {
       console.error("Erro ao fazer login:", error);
