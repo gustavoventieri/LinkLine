@@ -19,8 +19,7 @@ import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { MailOutline } from "@mui/icons-material";
 
-import { api } from "../../../../shared/services";
-
+import { api } from "../../../shared/services";
 
 const schema = yup.object({
   email: yup.string().email().required("Email is required"),
@@ -108,7 +107,6 @@ export const ResetPasswordEmail = () => {
         display="flex"
         justifyContent="center"
         alignItems="start"
-        borderRadius={10}
       >
         <Box
           display="flex"
@@ -116,12 +114,12 @@ export const ResetPasswordEmail = () => {
           alignItems="center"
           justifyContent="center"
           boxShadow={3}
-          width="100%"
           height={"60vh"}
           sx={{
-            borderRadius: mdDown ? 0 : 5,
+            borderRadius: mdDown ? 0 : 3,
             overflowY: "auto",
-            boxShadow: mdDown ? 0 : 10,
+            boxShadow: mdDown ? 0 : 4,
+            maxWidth: 500,
             px: 2,
             backgroundColor: mdDown ? "none" : theme.palette.background.paper,
           }}
@@ -142,7 +140,7 @@ export const ResetPasswordEmail = () => {
                 paddingX={smDown ? 2 : 5}
               >
                 <Typography
-                  fontSize={mdDown ? 28 : 40}
+                  fontSize={mdDown ? 28 : 30}
                   fontWeight={900}
                   mb={-5}
                   align="center"
@@ -154,7 +152,7 @@ export const ResetPasswordEmail = () => {
                 </Typography>
 
                 <Typography
-                  fontSize={mdDown ? 14 : 20}
+                  fontSize={mdDown ? 14 : 16}
                   mb={-2}
                   fontWeight={400}
                   align="center"
@@ -173,27 +171,11 @@ export const ResetPasswordEmail = () => {
                   helperText={errors.email?.message}
                   variant="outlined"
                   fullWidth
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 3,
-                      height: 65,
-                      "& fieldset": {
-                        borderColor: theme.palette.primary.main,
-                      },
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: theme.palette.primary.main,
-                    },
-                    "& .MuiInputLabel-shrink": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start" sx={{ ml: 1 }}>
                         <MailOutline
-                          color="primary"
-                          sx={{ width: 30, height: 30 }}
+                          sx={{ color: theme.palette.primary.main }}
                         />
                       </InputAdornment>
                     ),
@@ -206,11 +188,7 @@ export const ResetPasswordEmail = () => {
                   color="primary"
                   fullWidth
                   sx={{
-                    borderRadius: 3,
-                    paddingY: 1.8,
-                    "&:hover": {
-                      backgroundColor: theme.palette.primary.dark,
-                    },
+                    paddingY: 1.5,
                   }}
                   disabled={isLoading}
                 >

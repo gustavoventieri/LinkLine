@@ -120,19 +120,21 @@ export const Login = () => {
             p: 4,
           }}
         >
-          <Paper
-            elevation={isMdDown ? 0 : 3}
+          <Box
             sx={{
               display: "flex",
               flexDirection: "column",
               width: "100%",
+              height: "50vh",
               maxWidth: 500,
               p: isMdDown ? 1 : 4,
               justifyContent: "center",
               borderRadius: 3,
               gap: 2,
-              bgcolor: isMdDown ? "transparent" : undefined,
-              boxShadow: isMdDown ? "none" : undefined,
+              bgcolor: isMdDown
+                ? "transparent"
+                : theme.palette.background.paper,
+              boxShadow: isMdDown ? "none" : 3,
             }}
           >
             <Typography
@@ -206,20 +208,37 @@ export const Login = () => {
 
               <Box textAlign="right" sx={{ mt: 1 }}>
                 <Link
-                  href="/reset-password"
+                  onClick={() => localStorage.setItem("authSession", "true")}
+                  href="/reset-password/email"
                   underline="hover"
                   variant="body2"
+                  textTransform={"none"}
                   color={theme.palette.primary.light}
                 >
                   Esqueceu sua senha?
                 </Link>
+              </Box>
+              <Box mt={1} mb={1} textAlign="left">
+                <Typography
+                  fontSize={14}
+                  color={theme.palette.mode === "light" ? "black" : "white"}
+                >
+                  Não tem uma conta?{" "}
+                  <Link
+                    href="/register"
+                    underline="hover"
+                    color={theme.palette.primary.light}
+                  >
+                    Cadastre-se
+                  </Link>
+                </Typography>
               </Box>
 
               <Button
                 type="submit"
                 variant="contained"
                 fullWidth
-                sx={{ mt: 2, py: 1.5, fontSize: 16 }}
+                sx={{ mt: 1, py: 1.5 }}
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -229,20 +248,7 @@ export const Login = () => {
                 )}
               </Button>
             </form>
-
-            <Box mt={2} textAlign="center">
-              <Typography>
-                Não tem uma conta?{" "}
-                <Link
-                  href="/register"
-                  underline="hover"
-                  color={theme.palette.primary.light}
-                >
-                  Cadastre-se
-                </Link>
-              </Typography>
-            </Box>
-          </Paper>
+          </Box>
         </Grid>
 
         {!isMdDown && (

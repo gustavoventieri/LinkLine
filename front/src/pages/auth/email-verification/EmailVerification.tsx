@@ -132,171 +132,159 @@ export const EmailVerification = () => {
   };
 
   return (
-    <Grid
-      container
+    <Box
+      display="flex"
+      width="100%"
+      height="100vh"
       justifyContent="center"
       alignItems="center"
-      height="100vh"
-      width="100%"
     >
-      <Grid
-        size={{ xs: 12, sm: 8, md: 8, lg: 5 }}
+      <Box
         display="flex"
-        justifyContent="center"
         flexDirection="column"
         alignItems="center"
-        borderRadius={1}
+        justifyContent="center"
+        height="50vh"
+        sx={{
+          borderRadius: smDown ? 0 : 3,
+          overflow: "hidden",
+          boxShadow: mdDown ? 0 : 4,
+          maxWidth: 500,
+          backgroundColor: mdDown ? "none" : theme.palette.background.paper,
+          px: 5,
+        }}
       >
-        <Box
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          width="80%"
-          height="50vh"
-          sx={{
-            borderRadius: smDown ? 0 : 3,
-            overflow: "hidden",
-            boxShadow: mdDown ? 0 : 10,
-            backgroundColor: mdDown ? "none" : theme.palette.background.paper,
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+            }
           }}
+          style={{ width: "100%" }}
         >
-          <form onSubmit={handleSubmit(onSubmit)} style={{ width: "100%" }}>
-            <input type="hidden" {...register("verificationCode")} />
+          <input type="hidden" {...register("verificationCode")} />
 
-            <Box
-              width="100%"
-              display="flex"
-              flexDirection="column"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Box
-                width={smDown ? "100%" : "80%"}
-                display="flex"
-                flexDirection="column"
-                gap={8}
+          <Box
+            width="100%"
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Box display="flex" flexDirection="column" gap={8} maxWidth={500}>
+              <Typography
+                sx={{
+                  fontSize: mdDown ? 24 : 28,
+                  fontWeight: 900,
+                  mb: -5,
+                  textAlign: "center" as const,
+                  color:
+                    theme.palette.mode === "light"
+                      ? theme.palette.primary.main
+                      : theme.palette.common.white,
+                }}
               >
-                <Typography
-                  sx={{
-                    fontSize: mdDown ? 24 : 28,
-                    fontWeight: 900,
-                    mb: -5,
-                    textAlign: "center" as const,
-                    color:
-                      theme.palette.mode === "light"
-                        ? theme.palette.primary.main
-                        : theme.palette.common.white,
-                  }}
-                >
-                  Verifying Your Email
-                </Typography>
-                <Typography
-                  sx={{
-                    fontSize: mdDown ? 12 : 16,
-                    mb: -5,
-                    fontWeight: 400,
-                    textAlign: "center" as const,
-                    color:
-                      theme.palette.mode === "light"
-                        ? theme.palette.text.primary
-                        : theme.palette.common.white,
-                  }}
-                >
-                  Check your email — we’ve sent you a code to verify your email!
-                </Typography>
+                Verifying Your Email
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: mdDown ? 12 : 16,
+                  mb: -5,
+                  fontWeight: 400,
+                  textAlign: "center" as const,
+                  color:
+                    theme.palette.mode === "light"
+                      ? theme.palette.text.primary
+                      : theme.palette.common.white,
+                }}
+              >
+                Check your email — we’ve sent you a code to verify your email!
+              </Typography>
 
-                <Box display="flex" justifyContent="center" gap={1}>
-                  {code.map((c, i) => (
-                    <TextField
-                      key={i}
-                      inputRef={(el) => (inputsRef.current[i] = el)}
-                      inputProps={{
-                        maxLength: 1,
-                        inputMode: "numeric",
-                        pattern: "[0-9]*",
-                      }}
-                      sx={{
-                        width: { xs: "2.5rem", sm: "3rem", md: "3rem" },
-                        "& input": {
-                          fontSize: { xs: "2rem", sm: "2.5rem", md: "2.5rem" },
-                          padding: 0,
-                          textAlign: "center" as const,
-                          color: theme.palette.text.primary,
-                        },
-                      }}
-                      value={c}
-                      onChange={(e) => handleInputChange(i, e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(e, i)}
-                      error={!!errors.verificationCode}
-                      helperText={errors.verificationCode?.message}
-                      size="small" // opcional para deixar menor
-                      variant="outlined"
-                    />
-                  ))}
-                </Box>
-                <Typography
-                  fontSize={16}
-                  fontWeight={500}
-                  align="left"
-                  ml={0.5}
-                  mt={-5}
-                  sx={{ color: "gray" }}
-                >
-                  Didn’t receive yet?{" "}
-                  <Link
-                    component="button"
-                    onClick={onResend}
-                    underline="hover"
-                    disabled={isResendDisabled}
-                    sx={{
-                      color: isResendDisabled
-                        ? "gray"
-                        : theme.palette.primary.light,
-                      fontWeight: 500,
-                      mt: -0.3,
+              <Box display="flex" justifyContent="center" gap={1}>
+                {code.map((c, i) => (
+                  <TextField
+                    key={i}
+                    inputRef={(el) => (inputsRef.current[i] = el)}
+                    inputProps={{
+                      maxLength: 1,
+                      inputMode: "numeric",
+                      pattern: "[0-9]*",
                     }}
-                  >
-                    Resend code
-                  </Link>
-                  {isResendDisabled && (
-                    <Typography
-                      component="span"
-                      fontSize={14}
-                      fontWeight={400}
-                      color="error"
-                      ml={1}
-                    >
-                      ({resendTimer}s)
-                    </Typography>
-                  )}
-                </Typography>
-
-                <Button
-                  fullWidth
-                  type="submit"
-                  variant="contained"
-                  sx={{
-                    marginTop: -4,
-                    borderRadius: 3,
-                    paddingY: 1.4,
-                    "&:hover": {
-                      backgroundColor: theme.palette.primary.dark,
-                    },
-                  }}
-                  disabled={isLoading || code.some((x) => !x)}
-                >
-                  {isLoading ? (
-                    <CircularProgress size={26} sx={{ color: "white" }} />
-                  ) : (
-                    "Verify"
-                  )}
-                </Button>
+                    sx={{
+                      width: { xs: "2.5rem", sm: "3rem", md: "3rem" },
+                      "& input": {
+                        fontSize: { xs: "2rem", sm: "2.5rem", md: "2.5rem" },
+                        padding: 0,
+                        textAlign: "center" as const,
+                        color: theme.palette.text.primary,
+                      },
+                    }}
+                    value={c}
+                    onChange={(e) => handleInputChange(i, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(e, i)}
+                    error={!!errors.verificationCode}
+                    helperText={errors.verificationCode?.message}
+                    size="small" // opcional para deixar menor
+                    variant="outlined"
+                  />
+                ))}
               </Box>
+              <Typography
+                fontSize={14}
+                align="left"
+                ml={0.5}
+                mt={-5}
+                sx={{ color: "black" }}
+              >
+                Didn’t receive yet?{" "}
+                <Link
+                  component="button"
+                  onClick={onResend}
+                  underline="hover"
+                  disabled={isResendDisabled}
+                  sx={{
+                    color: isResendDisabled
+                      ? "gray"
+                      : theme.palette.primary.light,
+                    fontSize: 14,
+                    mt: -0.3,
+                  }}
+                >
+                  Resend code
+                </Link>
+                {isResendDisabled && (
+                  <Typography component="span" color="error" ml={1}>
+                    ({resendTimer}s)
+                  </Typography>
+                )}
+              </Typography>
+
+              <Button
+                fullWidth
+                type="submit"
+                variant="contained"
+                sx={{
+                  marginTop: -4,
+
+                  paddingY: 1.4,
+                  "&:hover": {
+                    backgroundColor: theme.palette.primary.dark,
+                  },
+                }}
+                disabled={isLoading || code.some((x) => !x)}
+              >
+                {isLoading ? (
+                  <CircularProgress size={26} sx={{ color: "white" }} />
+                ) : (
+                  "Verify"
+                )}
+              </Button>
             </Box>
-          </form>
-        </Box>
-      </Grid>
+          </Box>
+        </form>
+      </Box>
 
       <Snackbar
         open={snackbarOpen}
@@ -313,6 +301,6 @@ export const EmailVerification = () => {
           Expired or Invalid Code. Please try again.
         </Alert>
       </Snackbar>
-    </Grid>
+    </Box>
   );
 };

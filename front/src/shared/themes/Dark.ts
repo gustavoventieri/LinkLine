@@ -5,11 +5,12 @@ export const DarkTheme = createTheme({
   palette: {
     mode: "dark",
     primary: {
-      main: "#0A7BFF",
-      light: "#5AAEFF", // Versão clara
-      dark: "#005FCC", // Versão escura
+      main: "#3A6EA5",
+      light: "#6DA9E4",
+      dark: "#264D73",
       contrastText: "#ffffff",
     },
+
     secondary: {
       main: "#009688", // Verde-azulado (moderno)
       dark: "#00695C",

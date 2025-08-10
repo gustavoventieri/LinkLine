@@ -120,7 +120,7 @@ export const Register = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              bgcolor: "primary.main",
+              bgcolor: theme.palette.primary.main,
               color: "#fff",
               p: 4,
             }}
@@ -153,17 +153,19 @@ export const Register = () => {
             p: 4,
           }}
         >
-          <Paper
-            elevation={isMdDown ? 0 : 3}
+          <Box
             sx={{
               display: "flex",
               flexDirection: "column",
-              width: "100%",
+              height: "65vh",
               maxWidth: 500,
               p: isMdDown ? 1 : 4,
               justifyContent: "center",
               borderRadius: 3,
-              bgcolor: isMdDown ? "transparent" : undefined,
+              bgcolor: isMdDown
+                ? "transparent"
+                : theme.palette.background.paper,
+              boxShadow: 3,
             }}
           >
             <Typography
@@ -289,13 +291,27 @@ export const Register = () => {
                   ),
                 }}
               />
-
+              <Box my={1} textAlign="left">
+                <Typography
+                  color={theme.palette.mode === "light" ? "black" : "white"}
+                  fontSize={14}
+                >
+                  Já tem uma conta?{" "}
+                  <Link
+                    href="/"
+                    underline="hover"
+                    color={theme.palette.primary.light}
+                  >
+                    Entrar
+                  </Link>
+                </Typography>
+              </Box>
               <Button
                 type="submit"
                 variant="contained"
                 fullWidth
                 disabled={isLoading}
-                sx={{ mt: 3, py: 1.5 }}
+                sx={{ mt: 2, py: 1.5 }}
               >
                 {isLoading ? (
                   <CircularProgress size={24} color="inherit" />
@@ -304,20 +320,7 @@ export const Register = () => {
                 )}
               </Button>
             </form>
-
-            <Box mt={2} textAlign="center">
-              <Typography>
-                Já tem uma conta?{" "}
-                <Link
-                  href="/login"
-                  underline="hover"
-                  color={theme.palette.primary.light}
-                >
-                  Entrar
-                </Link>
-              </Typography>
-            </Box>
-          </Paper>
+          </Box>
         </Grid>
       </Grid>
 
