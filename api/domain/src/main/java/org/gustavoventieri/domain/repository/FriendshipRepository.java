@@ -5,18 +5,21 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.gustavoventieri.domain.entity.FriendshipDomain;
+import org.gustavoventieri.domain.entity.UserDomain;
 import org.gustavoventieri.domain.enums.RequestStatus;
 
 public interface FriendshipRepository {
 
-    List<FriendshipDomain> getAllByUserId(UUID userId);
+    List<FriendshipDomain> getAllByUserId(final UUID userId);
 
-    void save(FriendshipDomain friendshipDomain);
+    void save(final FriendshipDomain friendshipDomain);
 
-    void updateStatus(UUID requestId, RequestStatus status);
+    void updateFriendship(final UUID requestId, final UserDomain sender, final UserDomain receiver,
+            final RequestStatus status);
 
-    Optional<FriendshipDomain> findById(UUID requestId);
+    Optional<FriendshipDomain> findById(final UUID requestId);
 
-    Optional<FriendshipDomain> findExisting(UUID userId1, UUID userId2, List<RequestStatus> statuses);
+    List<FriendshipDomain> findExisting(final UUID userId1, final UUID userId2,
+            final List<RequestStatus> statuses);
 
 }

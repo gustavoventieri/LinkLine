@@ -9,7 +9,7 @@ import org.gustavoventieri.domain.enums.RequestStatus;
 
 public interface FriendshipService {
 
-    void createFriendship(UUID userId, String friendUsername);
+    void createFriendship(UUID senderId, String friendUsername);
 
     void updateFriendship(UUID friendshipId, RequestStatus newStatus, UUID currentUserId);
 

@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.gustavoventieri.domain.entity.FriendshipDomain;
+import org.gustavoventieri.domain.entity.UserDomain;
 import org.gustavoventieri.domain.enums.RequestStatus;
 import org.gustavoventieri.domain.exception.Conflict;
 import org.gustavoventieri.domain.exception.InternalServerError;
@@ -14,6 +15,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 
 import com.gustavoventieri.framework.adapter.mapper.FriendshipMapper;
+import com.gustavoventieri.framework.adapter.mapper.UserMapper;
 import com.gustavoventieri.framework.driver.repository.client.FriendshipOrm;
 import com.gustavoventieri.framework.entity.Friendship;
 
@@ -63,7 +65,8 @@ public class FriendshipRepositoryImpl implements FriendshipRepository {
      * @throws InternalServerError if any internal error occurs.
      */
     @Override
-    public void updateStatus(final UUID requestId, final RequestStatus status) {
+    public void updateFriendship(final UUID requestId, final UserDomain sender, final UserDomain receiver,
+            final RequestStatus status) {
         try {
             log.debug("Checking existence of friendship {}", requestId);
 
@@ -71,6 +74,8 @@ public class FriendshipRepositoryImpl implements FriendshipRepository {
                     .orElseThrow(() -> new NotFound("Friendship not found"));
 
             friendship.setStatus(status);
+            friendship.setSender(UserMapper.toEntityBasic(sender));
+            friendship.setReceiver(UserMapper.toEntityBasic(receiver));
 
             friendshipOrm.save(friendship);
 
@@ -116,14 +121,17 @@ public class FriendshipRepositoryImpl implements FriendshipRepository {
      * @throws InternalServerError if any internal error occurs.
      */
     @Override
-    public Optional<FriendshipDomain> findExisting(final UUID userId1, final UUID userId2,
+    public List<FriendshipDomain> findExisting(final UUID userId1, final UUID userId2,
             final List<RequestStatus> statuses) {
         try {
             log.debug("Checking existence of friendship between {} and {}", userId1, userId2);
 
-            final Optional<Friendship> friendship = friendshipOrm.findByUsersAndStatuses(userId1, userId2, statuses);
+            final List<Friendship> friendships = friendshipOrm.findByUsersAndStatuses(userId1, userId2,
+                    statuses);
 
-            return friendship.map(FriendshipMapper::toDomainBasic);
+            return friendships.stream()
+                    .map(FriendshipMapper::toDomainComplete)
+                    .toList();
 
         } catch (final Exception e) {
             log.error("Internal error occurred while fetching friendship between {} and {}", userId1, userId2, e);

@@ -28,175 +28,186 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FriendshiplServiceImpl implements FriendshipService {
 
-    private final FriendshipRepository friendshipRepository;
-    private final UserRepository userRepository;
+        private final FriendshipRepository friendshipRepository;
+        private final UserRepository userRepository;
 
-    /**
-     * Creates a new friendship request between two users.
-     *
-     * @param senderId         ID of the requesting user
-     * @param receiverUsername Username of the user receiving the request
-     */
-    @Override
-    @Transactional
-    public void createFriendship(final UUID senderId, final String receiverUsername) {
-        log.debug("Starting friendship creation: senderId={}, receiverUsername={}", senderId, receiverUsername);
+        /**
+         * Creates a new friendship request between two users.
+         *
+         * @param senderId         ID of the requesting user
+         * @param receiverUsername Username of the user receiving the request
+         */
+        @Override
+        @Transactional
+        public void createFriendship(final UUID senderId, final String receiverUsername) {
+                log.debug("Starting friendship creation: senderId={}, receiverUsername={}", senderId, receiverUsername);
 
-        final UserDomain sender = userRepository.findById(senderId)
-                .orElseThrow(() -> new IllegalArgumentException("Requesting user not found"));
+                final UserDomain sender = userRepository.findById(senderId)
+                                .orElseThrow(() -> new IllegalArgumentException("Requesting user not found"));
 
-        final UserDomain receiver = userRepository.findByUsername(receiverUsername)
-                .orElseThrow(() -> new IllegalArgumentException("Target user not found"));
+                final UserDomain receiver = userRepository.findByUsername(receiverUsername)
+                                .orElseThrow(() -> new IllegalArgumentException("Target user not found"));
 
-        if (sender.id().equals(receiver.id())) {
-            log.warn("User {} attempted to send a friendship request to themselves", senderId);
-            throw new IllegalArgumentException("You cannot send a friendship request to yourself.");
+                if (sender.id().equals(receiver.id())) {
+                        log.warn("User {} attempted to send a friendship request to themselves", senderId);
+                        throw new IllegalArgumentException("You cannot send a friendship request to yourself.");
+                }
+
+                final List<RequestStatus> blockedStatuses = Arrays.asList(RequestStatus.PENDING, RequestStatus.ACCEPTED,
+                                RequestStatus.REMOVED);
+
+                Optional<FriendshipDomain> existing = friendshipRepository
+                                .findExisting(senderId, receiver.id(), blockedStatuses)
+                                .stream()
+                                .findFirst();
+
+                if (existing.isPresent()) {
+                        if (reactivateFriendshipIfRemoved(existing.get(), sender, receiver)) {
+                                return;
+                        }
+                        throw new IllegalStateException(
+                                        "You already sent a request or are already friends.");
+                }
+
+                final Friendship friendship = new Friendship(
+                                null,
+                                UserMapper.toEntityBasic(sender),
+                                UserMapper.toEntityBasic(receiver),
+                                RequestStatus.PENDING,
+                                null,
+                                null);
+
+                friendshipRepository.save(FriendshipMapper.toDomainComplete(friendship));
+
+                log.info("Friendship request sent from {} to {}", sender.username(), receiver.username());
         }
 
-        final List<RequestStatus> blockedStatuses = Arrays.asList(RequestStatus.PENDING, RequestStatus.ACCEPTED,
-                RequestStatus.REMOVED);
+        /**
+         * Updates the status of a friendship request.
+         *
+         * @param friendshipId  ID of the friendship
+         * @param newStatus     New status to be set
+         * @param currentUserId ID of the user performing the update
+         */
+        @Override
+        @Transactional
+        public void updateFriendship(final UUID friendshipId, final RequestStatus newStatus, final UUID currentUserId) {
+                log.debug("Attempting to update friendship {} to {}", friendshipId, newStatus);
 
-        friendshipRepository.findExisting(senderId, receiver.id(), blockedStatuses)
-                .ifPresent(existing -> {
-                    if (reactivateFriendshipIfRemoved(existing)) {
-                        return;
-                    }
-                    log.warn("User {} already has a pending request or is already friends with {}", senderId,
-                            receiverUsername);
-                    throw new IllegalStateException("You already sent a request or are already friends.");
-                });
+                final FriendshipDomain friendship = friendshipRepository.findById(friendshipId)
+                                .orElseThrow(() -> new IllegalArgumentException("Friendship not found"));
 
-        final Friendship friendship = new Friendship(
-                null,
-                UserMapper.toEntityBasic(sender),
-                UserMapper.toEntityBasic(receiver),
-                RequestStatus.PENDING,
-                null,
-                null);
+                final UUID senderId = friendship.sender().id();
+                final UUID receiverId = friendship.receiver().id();
 
-        friendshipRepository.save(FriendshipMapper.toDomainComplete(friendship));
+                // Check if the current user is either the sender or receiver
+                if (!currentUserId.equals(senderId) && !currentUserId.equals(receiverId)) {
+                        throw new SecurityException("You do not have permission to update this friendship.");
+                }
 
-        log.info("Friendship request sent from {} to {}", sender.username(), receiver.username());
-    }
+                // Only the receiver can accept the friendship
+                if (newStatus == RequestStatus.ACCEPTED && !currentUserId.equals(receiverId)) {
+                        throw new SecurityException("Only the recipient of the request can accept the friendship.");
+                }
 
-    /**
-     * Updates the status of a friendship request.
-     *
-     * @param friendshipId  ID of the friendship
-     * @param newStatus     New status to be set
-     * @param currentUserId ID of the user performing the update
-     */
-    @Override
-    @Transactional
-    public void updateFriendship(final UUID friendshipId, final RequestStatus newStatus, final UUID currentUserId) {
-        log.debug("Attempting to update friendship {} to {}", friendshipId, newStatus);
+                friendshipRepository.updateFriendship(friendshipId, friendship.sender(), friendship.receiver(), newStatus);
 
-        final FriendshipDomain friendship = friendshipRepository.findById(friendshipId)
-                .orElseThrow(() -> new IllegalArgumentException("Friendship not found"));
-
-        final UUID senderId = friendship.sender().id();
-        final UUID receiverId = friendship.receiver().id();
-
-        // Check if the current user is either the sender or receiver
-        if (!currentUserId.equals(senderId) && !currentUserId.equals(receiverId)) {
-            throw new SecurityException("You do not have permission to update this friendship.");
+                log.info("Friendship {} status updated to {} by user {}", friendshipId, newStatus, currentUserId);
         }
 
-        // Only the receiver can accept the friendship
-        if (newStatus == RequestStatus.ACCEPTED && !currentUserId.equals(receiverId)) {
-            throw new SecurityException("Only the recipient of the request can accept the friendship.");
+        /**
+         * Retrieves all friendships and requests for a given user.
+         *
+         * @param userId ID of the user
+         * @return list of friendships and notifications
+         */
+        @Override
+        public List<GetAllFriendships> getAllByUserId(final UUID userId) {
+                log.debug("Fetching all friendships and requests for user: {}", userId);
+
+                final List<FriendshipDomain> friendships = friendshipRepository.getAllByUserId(userId);
+
+                final List<GetAllFriendships> result = friendships.stream()
+                                .map(friendship -> FriendshipMapper.toNotificationDTO(friendship))
+                                .toList();
+
+                log.info("Found {} friendships/requests for user {}", result.size(), userId);
+                return result;
         }
 
-        friendshipRepository.updateStatus(friendshipId, newStatus);
+        /**
+         * Searches for users by a partial or full username (excluding the current user)
+         * and returns
+         * a list of potential friends along with the current friendship status.
+         *
+         * <p>
+         * The search is limited by the specified {@code searchLimit} to avoid returning
+         * too many results.
+         * If a friendship exists between the current user and a potential match, the
+         * friendship status
+         * (e.g., PENDING, ACCEPTED) is returned. Otherwise, the status will be
+         * "NOT_FRIEND".
+         * </p>
+         *
+         * @param searchTerm    the username or partial username to search for
+         * @param currentUserId the UUID of the currently authenticated user (to exclude
+         *                      from results)
+         * @param searchLimit   the maximum number of users to return
+         * @return a list of {@link PotentialFriendResponse} objects containing basic
+         *         user info and friendship status
+         */
+        @Override
+        public List<PotentialFriendResponse> findUsersByUsername(final String searchTerm, final UUID currentUserId,
+                        final int searchLimit) {
+                log.debug("Searching users by username. Term: {}, currentUserId: {}", searchTerm, currentUserId);
 
-        log.info("Friendship {} status updated to {} by user {}", friendshipId, newStatus, currentUserId);
-    }
+                List<UserDomain> potentialFriends = userRepository
+                                .searchByApproximateUsername(searchTerm, currentUserId)
+                                .stream()
+                                .limit(searchLimit)
+                                .toList();
 
-    /**
-     * Retrieves all friendships and requests for a given user.
-     *
-     * @param userId ID of the user
-     * @return list of friendships and notifications
-     */
-    @Override
-    public List<GetAllFriendships> getAllByUserId(final UUID userId) {
-        log.debug("Fetching all friendships and requests for user: {}", userId);
+                return potentialFriends.stream()
+                                .map(potential -> {
+                                        UUID otherUserId = potential.id();
 
-        final List<FriendshipDomain> friendships = friendshipRepository.getAllByUserId(userId);
+                                        // Verifica se existe amizade entre os dois usuários (transforma List ->
+                                        // Optional)
+                                        Optional<FriendshipDomain> optionalFriendship = friendshipRepository
+                                                        .findExisting(
+                                                                        currentUserId,
+                                                                        otherUserId,
+                                                                        List.of(RequestStatus.PENDING,
+                                                                                        RequestStatus.ACCEPTED))
+                                                        .stream()
+                                                        .findFirst();
 
-        final List<GetAllFriendships> result = friendships.stream()
-                .map(friendship -> FriendshipMapper.toNotificationDTO(friendship))
-                .toList();
+                                        // Define o status como String para lidar com "NOT_FRIEND"
+                                        String status = optionalFriendship
+                                                        .map(friendship -> friendship.status().name())
+                                                        .orElse("NOT_FRIEND");
 
-        log.info("Found {} friendships/requests for user {}", result.size(), userId);
-        return result;
-    }
-
-    /**
-     * Searches for users by a partial or full username (excluding the current user)
-     * and returns
-     * a list of potential friends along with the current friendship status.
-     *
-     * <p>
-     * The search is limited by the specified {@code searchLimit} to avoid returning
-     * too many results.
-     * If a friendship exists between the current user and a potential match, the
-     * friendship status
-     * (e.g., PENDING, ACCEPTED) is returned. Otherwise, the status will be
-     * "NOT_FRIEND".
-     * </p>
-     *
-     * @param searchTerm    the username or partial username to search for
-     * @param currentUserId the UUID of the currently authenticated user (to exclude
-     *                      from results)
-     * @param searchLimit   the maximum number of users to return
-     * @return a list of {@link PotentialFriendResponse} objects containing basic
-     *         user info and friendship status
-     */
-    @Override
-    public List<PotentialFriendResponse> findUsersByUsername(final String searchTerm, final UUID currentUserId,
-            final int searchLimit) {
-        log.debug("Searching users by username. Term: {}, currentUserId: {}", searchTerm, currentUserId);
-
-        List<UserDomain> potentialFriends = userRepository
-                .searchByApproximateUsername(searchTerm, currentUserId)
-                .stream()
-                .limit(searchLimit)
-                .toList();
-
-        return potentialFriends.stream()
-                .map(potential -> {
-                    UUID otherUserId = potential.id();
-
-                    // Verifica se existe amizade entre os dois usuários
-                    Optional<FriendshipDomain> optionalFriendship = friendshipRepository.findExisting(
-                            currentUserId,
-                            otherUserId,
-                            List.of(RequestStatus.PENDING, RequestStatus.ACCEPTED));
-
-                    // Define o status como String para lidar com "not_friend"
-                    String status = optionalFriendship
-                            .map(friendship -> friendship.status().name())
-                            .orElse("NOT_FRIEND");
-
-                    return new PotentialFriendResponse(
-                            potential.username(),
-                            potential.avatarUrl(),
-                            status);
-                })
-                .toList();
-    }
-
-    // Helpers
-
-    private boolean reactivateFriendshipIfRemoved(final FriendshipDomain existingFriendship) {
-        if (existingFriendship.status() == RequestStatus.REMOVED) {
-            friendshipRepository.updateStatus(existingFriendship.id(), RequestStatus.PENDING);
-            log.info("Friendship reactivated between user {} and user {}",
-                    existingFriendship.sender(), existingFriendship.receiver());
-            return true;
+                                        return new PotentialFriendResponse(
+                                                        potential.username(),
+                                                        potential.avatarUrl(),
+                                                        status);
+                                })
+                                .toList();
         }
-        return false;
-    }
+
+        // Helpers
+
+        private boolean reactivateFriendshipIfRemoved(final FriendshipDomain existingFriendship,
+                        final UserDomain sender, final UserDomain receiver) {
+
+                if (existingFriendship.status() == RequestStatus.REMOVED) {
+                        friendshipRepository.updateFriendship(existingFriendship.id(), sender, receiver,
+                                        RequestStatus.PENDING);
+                        log.info("Friendship reactivated between user {} and user {}",
+                                        existingFriendship.sender(), existingFriendship.receiver());
+                        return true;
+                }
+                return false;
+        }
 
 }
