@@ -22,10 +22,9 @@ interface UserFoundCardProps {
   avatarUrl?: string;
   smDown: boolean;
   mdDown: boolean;
+
   relationshipStatus: UserRelationshipStatus;
   onAddFriend: () => Promise<void>;
-  onAcceptRequest?: () => Promise<void>;
-  onDeclineRequest?: () => Promise<void>;
 }
 
 export const UserFoundCard = memo(

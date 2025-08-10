@@ -17,9 +17,10 @@ interface RequestCardProps {
   currentUser: string;
   sender: string;
   receiver: string;
-  status: "pending" | "accepted" | "declined";
+  status: "PENDING" | "ACCEPTED";
   onAccept?: () => void;
   onDecline?: () => void;
+  onRemove?: () => void;
   loading?: boolean;
 }
 
@@ -35,6 +36,7 @@ export const RequestCard = memo(
     status,
     onAccept,
     onDecline,
+    onRemove,
     loading = false,
   }: RequestCardProps) => {
     const isYouSender = currentUser === sender;
@@ -44,12 +46,45 @@ export const RequestCard = memo(
 
     const renderContent = () => {
       switch (status) {
-        case "pending":
+        case "PENDING":
           if (isYouSender) {
             return (
-              <Typography fontSize={smDown ? 10 : 12}>
-                You sent a follow request to <strong>{receiver}</strong>
-              </Typography>
+              <Box
+                alignItems="center"
+                display="flex"
+                justifyContent="space-between"
+              >
+                <Typography fontSize={smDown ? 10 : 12}>
+                  You sent a follow request to <strong>{receiver}</strong>
+                </Typography>
+                <Box
+                  display="flex"
+                  ml={1}
+                  gap={0.5}
+                  flexDirection={smDown ? "column" : "row"}
+                >
+                  <Button
+                    variant="contained"
+                    onClick={onRemove}
+                    disabled={loading}
+                    sx={{ py: 0.5, position: "relative" }}
+                  >
+                    Remove
+                    {loading && (
+                      <CircularProgress
+                        size={24}
+                        sx={{
+                          position: "absolute",
+                          top: "50%",
+                          left: "50%",
+                          marginTop: "-12px",
+                          marginLeft: "-12px",
+                        }}
+                      />
+                    )}
+                  </Button>
+                </Box>
+              </Box>
             );
           }
 
@@ -117,7 +152,7 @@ export const RequestCard = memo(
           }
           break;
 
-        case "accepted":
+        case "ACCEPTED":
           return (
             <Typography fontSize={smDown ? 10 : 12}>
               You and <strong>{otherUser}</strong> are now connected.

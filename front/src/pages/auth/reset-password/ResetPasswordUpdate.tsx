@@ -102,10 +102,8 @@ export const ResetPasswordUpdate = () => {
         localStorage.removeItem("authSession");
         localStorage.removeItem("email");
 
-        navigate("/login");
+        navigate("/");
       }
-
-      navigate("/login");
     } catch (error: any) {
       console.error("Erro ao verificar o código:", error);
       setSnackbarOpen(true);
@@ -144,13 +142,13 @@ export const ResetPasswordUpdate = () => {
           alignItems="center"
           justifyContent="center"
           boxShadow={3}
-          width="100%"
-          height={"60vh"}
+          width="80%"
+          height={"50vh"}
           sx={{
-            borderRadius: mdDown ? 0 : 5,
+            borderRadius: mdDown ? 0 : 3,
             overflowY: "auto",
             boxShadow: mdDown ? 0 : 10,
-            px: 2,
+
             backgroundColor: mdDown ? "none" : theme.palette.background.paper,
           }}
         >
@@ -166,13 +164,12 @@ export const ResetPasswordUpdate = () => {
                 width="100%"
                 display="flex"
                 flexDirection="column"
-                gap={smDown ? 6 : 8}
-                paddingX={smDown ? 2 : 5}
+                gap={smDown ? 6 : 5}
+                paddingX={smDown ? 2 : 3}
               >
                 <Typography
-                  fontSize={mdDown ? 20 : 40}
+                  fontSize={mdDown ? 20 : 30}
                   fontWeight={900}
-                  mb={-3}
                   align="center"
                   color={
                     theme.palette.mode === "light"
@@ -227,21 +224,6 @@ export const ResetPasswordUpdate = () => {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 3,
-                      height: 65,
-                      "& fieldset": {
-                        borderColor: theme.palette.primary.main,
-                      },
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: theme.palette.primary.main,
-                    },
-                    "& .MuiInputLabel-shrink": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
                 />
                 <TextField
                   {...register("confirmPassword")}
@@ -287,21 +269,6 @@ export const ResetPasswordUpdate = () => {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 3,
-                      height: 65,
-                      "& fieldset": {
-                        borderColor: theme.palette.primary.main,
-                      },
-                    },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                      color: theme.palette.primary.main,
-                    },
-                    "& .MuiInputLabel-shrink": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
                 />
 
                 <Button
@@ -310,8 +277,8 @@ export const ResetPasswordUpdate = () => {
                   color="primary"
                   fullWidth
                   sx={{
-                    marginTop: mdDown ? -1 : -4,
-                    borderRadius: 3,
+                    marginTop: 0,
+
                     paddingY: 1.8,
                     "&:hover": {
                       backgroundColor: "primary.dark",
@@ -322,9 +289,7 @@ export const ResetPasswordUpdate = () => {
                   {isLoading ? (
                     <CircularProgress size={26} sx={{ color: "white" }} />
                   ) : (
-                    <Typography fontSize={14} fontWeight={500}>
-                      Update
-                    </Typography>
+                    <Typography>Update</Typography>
                   )}
                 </Button>
               </Box>

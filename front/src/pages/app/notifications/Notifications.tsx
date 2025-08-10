@@ -11,7 +11,6 @@ import { Diversity3Rounded } from "@mui/icons-material";
 import { BaseLayout } from "../../../shared/layouts";
 import { api } from "../../../shared/services";
 import { RequestCard } from "../../../shared/components";
-import { useNavigate } from "react-router-dom";
 import { UUID } from "crypto";
 import { useUsername } from "../../../shared/contexts/UsernameContext";
 
@@ -19,7 +18,7 @@ interface Request {
   id: UUID;
   senderUsername: string;
   receiverUsername: string;
-  status: "pending" | "accepted";
+  status: "PENDING" | "ACCEPTED";
   createdAt: string;
 }
 
@@ -34,47 +33,50 @@ export const Notifications = () => {
   const [requestLoadingId, setRequestLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchRequests = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await api.get("/friendship/get-all");
+  // fetchRequests declarado fora do useEffect para poder reutilizar
+  const fetchRequests = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.get("/friendship/get-all");
 
-        const requestsArray: Request[] = (response.data || []).map(
-          (req: any) => ({
-            id: req.friendshipId,
-            senderUsername: req.sender,
-            receiverUsername: req.receiver,
-            status: req.status.toLowerCase() as Request["status"],
-            createdAt: req.createdAt,
-          })
-        );
+      const requestsArray: Request[] = (response.data || []).map(
+        (req: any) => ({
+          id: req.friendshipId,
+          senderUsername: req.sender,
+          receiverUsername: req.receiver,
+          status: req.status as Request["status"],
+          createdAt: req.createdAt,
+        })
+      );
 
-        setRequests(requestsArray);
-      } catch (err: any) {
-        if (err.response?.status) {
-          setError("Nenhuma solicitação encontrada");
-          return;
-        }
-        setError("Erro ao buscar solicitações");
-        setRequests([]);
-      } finally {
-        setLoading(false);
-        console.log(username);
+      setRequests(requestsArray);
+    } catch (err: any) {
+      if (err.response?.status) {
+        setError("Nenhuma solicitação encontrada");
+        return;
       }
-    };
+      setError("Erro ao buscar solicitações");
+      setRequests([]);
+    } finally {
+      setLoading(false);
+      console.log(username);
+    }
+  };
+
+  useEffect(() => {
     fetchRequests();
   }, []);
 
   const handleUpdateChatRequestStatus = async (
     chatRequestId: UUID,
-    newStatus: "ACCEPTED" | "DECLINED"
+    newStatus: "ACCEPTED" | "DECLINED" | "REMOVED",
+    targetUsername: String
   ) => {
     setRequestLoadingId(chatRequestId);
     try {
       const payload = { status: newStatus };
-      console.log(chatRequestId);
+
       const response = await api.put(
         `/friendship/update/${chatRequestId}`,
         payload
@@ -82,8 +84,10 @@ export const Notifications = () => {
 
       if (response.status === 200) {
         if (newStatus === "ACCEPTED") {
-          await handleCreatePrivateChat(username);
-          window.location.reload();
+          await handleCreatePrivateChat(targetUsername);
+          await fetchRequests(); // Atualiza lista após criar chat
+        } else {
+          await fetchRequests(); // Atualiza lista mesmo se recusar
         }
       } else {
         console.warn(
@@ -102,9 +106,10 @@ export const Notifications = () => {
     }
   };
 
-  const handleCreatePrivateChat = async (username: string) => {
+  const handleCreatePrivateChat = async (targetUsername: String) => {
     try {
-      await api.post("/chat/private/create", { username });
+      console.log(targetUsername);
+      await api.post("/chats/private/create", { targetUsername });
     } catch (error: any) {
       console.error(
         "Erro ao criar chat privado:",
@@ -226,10 +231,25 @@ export const Notifications = () => {
                       currentUser={username}
                       status={req.status}
                       onAccept={() =>
-                        handleUpdateChatRequestStatus(req.id, "ACCEPTED")
+                        handleUpdateChatRequestStatus(
+                          req.id,
+                          "ACCEPTED",
+                          req.senderUsername
+                        )
                       }
                       onDecline={() =>
-                        handleUpdateChatRequestStatus(req.id, "DECLINED")
+                        handleUpdateChatRequestStatus(
+                          req.id,
+                          "DECLINED",
+                          req.senderUsername
+                        )
+                      }
+                      onRemove={() =>
+                        handleUpdateChatRequestStatus(
+                          req.id,
+                          "REMOVED",
+                          req.senderUsername
+                        )
                       }
                       loading={requestLoadingId === req.id}
                     />

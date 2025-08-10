@@ -236,7 +236,9 @@ export const EmailVerification = () => {
                 align="left"
                 ml={0.5}
                 mt={-5}
-                sx={{ color: "black" }}
+                sx={{
+                  color: theme.palette.mode === "light" ? "black" : "white",
+                }}
               >
                 Didn’t receive yet?{" "}
                 <Link

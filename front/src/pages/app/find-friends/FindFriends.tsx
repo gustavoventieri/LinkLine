@@ -80,6 +80,25 @@ export const FindFriends = () => {
     }
   };
 
+  const fetchAutoFriends = async () => {
+    setLoadingAutoFriends(true);
+    try {
+      const letter = getRandomLetter();
+      const response = await api.get("/friendship/search", {
+        params: { searchTerm: letter },
+      });
+      if (response.status === 200) {
+        setAutoFriends(response.data);
+      } else {
+        setAutoFriends([]);
+      }
+    } catch {
+      setAutoFriends([]);
+    } finally {
+      setLoadingAutoFriends(false);
+    }
+  };
+
   const debouncedFetchFriends = useCallback(
     debounce(fetchPotentialFriends, 500),
     []
@@ -93,24 +112,6 @@ export const FindFriends = () => {
   const [loadingAutoFriends, setLoadingAutoFriends] = useState(false);
 
   useEffect(() => {
-    const fetchAutoFriends = async () => {
-      setLoadingAutoFriends(true);
-      try {
-        const letter = getRandomLetter();
-        const response = await api.get("/friendship/search", {
-          params: { searchTerm: letter },
-        });
-        if (response.status === 200) {
-          setAutoFriends(response.data);
-        } else {
-          setAutoFriends([]);
-        }
-      } catch {
-        setAutoFriends([]);
-      } finally {
-        setLoadingAutoFriends(false);
-      }
-    };
     fetchAutoFriends();
   }, []);
 
@@ -127,7 +128,7 @@ export const FindFriends = () => {
         await api.post("/friendship/create", { friendUsername: username });
 
         fetchPotentialFriends(searchTerm);
-        window.location.reload();
+        fetchAutoFriends();
       }
     } catch (err: any) {
       setErrorMessage(err.response?.data?.error || "Erro inesperado");
@@ -253,7 +254,7 @@ export const FindFriends = () => {
               }}
               sx={{
                 width: mdDown ? "100%" : "80%",
-                boxShadow: 5,
+                boxShadow: 3,
                 borderRadius: "10px",
                 mx: smDown ? 1 : 3,
                 "& .MuiOutlinedInput-root": {

@@ -159,7 +159,6 @@ export const ResetPasswordCode = () => {
         display="flex"
         justifyContent="center"
         alignItems="center"
-        borderRadius={10}
       >
         <Box
           display="flex"
@@ -167,12 +166,12 @@ export const ResetPasswordCode = () => {
           alignItems="center"
           justifyContent="center"
           boxShadow={3}
-          width="80%"
+          maxWidth={500}
           height={"50vh"}
           sx={{
             borderRadius: smDown ? 0 : 3,
             overflow: "hidden",
-            boxShadow: smDown ? 0 : 10,
+            boxShadow: mdDown ? 0 : 3,
             backgroundColor: mdDown ? "none" : theme.palette.background.paper,
           }}
         >
@@ -260,17 +259,16 @@ export const ResetPasswordCode = () => {
                 )}
 
                 <Typography
-                  fontSize={16}
-                  fontWeight={500}
                   align="left"
                   ml={0.5}
                   mt={mdDown ? -2 : -5}
-                  sx={{ color: "gray" }}
+                  sx={{
+                    color: theme.palette.mode === "dark" ? "white" : "black",
+                  }}
                 >
                   Didn’t receive yet?{" "}
                   <Link
                     component="button"
-                    fontWeight={500}
                     onClick={onResendCode}
                     color="primary"
                     underline="hover"
@@ -283,13 +281,7 @@ export const ResetPasswordCode = () => {
                     Resend code
                   </Link>
                   {isResendDisabled && (
-                    <Typography
-                      component="span"
-                      fontSize={16}
-                      fontWeight={400}
-                      color="error"
-                      ml={1}
-                    >
+                    <Typography component="span" color="error" ml={1}>
                       ({resendTimer}s)
                     </Typography>
                   )}
@@ -302,7 +294,6 @@ export const ResetPasswordCode = () => {
                   fullWidth
                   sx={{
                     marginTop: -4,
-                    borderRadius: 3,
                     paddingY: 1.8,
                     "&:hover": {
                       backgroundColor: "primary.dark",

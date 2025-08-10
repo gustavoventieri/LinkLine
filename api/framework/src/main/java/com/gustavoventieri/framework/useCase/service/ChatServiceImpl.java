@@ -56,7 +56,7 @@ public class ChatServiceImpl implements ChatService {
 
                 final UserDomain currentUser = userRepository.findById(currentUserId)
                                 .orElseThrow(() -> new NotFound("Usuário atual não encontrado."));
-
+                log.info(targetUsername);
                 final UserDomain targetUser = userRepository.findByUsername(targetUsername)
                                 .orElseThrow(() -> new NotFound(
                                                 "Usuário alvo '" + targetUsername + "' não encontrado."));
